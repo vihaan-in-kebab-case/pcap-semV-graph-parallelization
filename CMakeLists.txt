@@ -37,5 +37,5 @@ target_link_libraries(test_sequential PRIVATE gps_seq)
 add_test(NAME sequential COMMAND test_sequential)
 
 add_executable(test_openmp tests/correctness/test_openmp.cpp)
-target_link_libraries(test_openmp PRIVATE gps_omp)
+target_link_libraries(test_openmp PRIVATE gps_seq gps_omp)
 add_test(NAME openmp COMMAND test_openmp)

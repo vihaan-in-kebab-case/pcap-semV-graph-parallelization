@@ -1,7 +1,9 @@
 #include "algorithm_api.hpp"
 #include "correctness.hpp"
 #include <cmath>
+#include <functional>
 #include <iostream>
+#include <queue>
 #include <random>
 
 static int failures = 0;
@@ -29,6 +31,29 @@ static std::vector<std::uint64_t> bellman_ford(const GraphCSR &g, vid_t src) {
     }
     if (!changed)
       break;
+  }
+  return d;
+}
+
+static std::vector<std::uint64_t> dijkstra_oracle(const GraphCSR &g,
+                                                  vid_t src) {
+  std::vector<std::uint64_t> d(g.n, INF_DIST);
+  using Item = std::pair<std::uint64_t, vid_t>;
+  std::priority_queue<Item, std::vector<Item>, std::greater<Item>> pq;
+  d[src] = 0;
+  pq.emplace(0, src);
+  while (!pq.empty()) {
+    auto [du, u] = pq.top();
+    pq.pop();
+    if (du != d[u])
+      continue;
+    for (eid_t i = g.row_ptr[u]; i < g.row_ptr[u + 1]; ++i) {
+      const vid_t v = g.col_idx[i];
+      if (du + g.weights[i] < d[v]) {
+        d[v] = du + g.weights[i];
+        pq.emplace(d[v], v);
+      }
+    }
   }
   return d;
 }
@@ -114,6 +139,7 @@ int main() {
           "bfs validator" + tag);
     auto ss = seq::sssp(gd, src);
     CHECK(ss.dist == bellman_ford(gd, src), "sssp vs bellman-ford" + tag);
+    CHECK(ss.dist == dijkstra_oracle(gd, src), "sssp vs dijkstra oracle" + tag);
     CHECK(check_sssp(gd, src, ss.dist).empty(), "sssp validator" + tag);
     CHECK(check_cc(gu, seq::connected_components(gu).label).empty(),
           "cc validator" + tag);

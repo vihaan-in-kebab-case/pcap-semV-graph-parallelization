@@ -17,6 +17,8 @@ CCResult connected_components(const GraphCSR &g) {
   std::iota(parent.begin(), parent.end(), 0);
   for (vid_t u = 0; u < g.n; ++u)
     for (eid_t i = g.row_ptr[u]; i < g.row_ptr[u + 1]; ++i) {
+      if (g.col_idx[i] < u)
+        continue; // symmetric graph: visit each edge once
       vid_t a = find(parent, u), b = find(parent, g.col_idx[i]);
       if (a == b)
         continue;

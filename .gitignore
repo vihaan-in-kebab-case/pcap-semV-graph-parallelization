@@ -1,2 +1,4 @@
 PCAP_Synopsis.pdf
 datasets/graphs/*
+build
+.venv

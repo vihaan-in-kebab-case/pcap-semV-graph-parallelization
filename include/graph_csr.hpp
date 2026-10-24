@@ -16,7 +16,7 @@ struct GraphCSR {
   std::vector<std::uint32_t> weights;
 
   eid_t out_degree(vid_t v) const { return row_ptr[v + 1] - row_ptr[v]; }
-  bool weighted() const { return !weights.empty(); }
+  bool weighted() const { return weights.size() == col_idx.size(); }
 };
 
 struct LoadTimings {

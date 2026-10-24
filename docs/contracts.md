@@ -12,6 +12,12 @@ unless `--undirected` (symmetrized). Weights: integer in [1,100], hash of (seed,
 | SSSP | as loaded, weighted | uint64 distance, UINT64_MAX = unreachable, non-negative weights | optimality validator (relaxed + tight predecessor) |
 | TC | symmetrized simple graph | each triangle counted once | independent 3x edge-wise count |
 
+## Algorithm choices (identical in every implementation)
+BFS: level-synchronous frontier. PageRank: pull over transposed CSR. CC: union-find,
+larger root under smaller. SSSP: frontier-based label-correcting. TC: sorted-list merge
+intersection (u < v < w). Sequential = the same algorithm on one thread. Dijkstra and
+Bellman-Ford exist only as test oracles.
+
 **Timing:** `load_s` = file parse + CSR build. `preprocess_s` = symmetrization / transpose /
 weight generation for that algorithm. `compute_s` = algorithm call incl. its internal
 allocation. `e2e_s = load_s + preprocess_s + compute_s`. Warm-up runs are discarded.
