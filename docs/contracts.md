@@ -18,6 +18,14 @@ larger root under smaller. SSSP: frontier-based label-correcting. TC: sorted-lis
 intersection (u < v < w). Sequential = the same algorithm on one thread. Dijkstra and
 Bellman-Ford exist only as test oracles.
 
+## (exception) MPI (single node, multi-process)
+1D block vertex partition; each rank holds only its slice of the CSR (TC replicates it, see below).
+BFS, PageRank, SSSP: same algorithm as seq/OpenMP in distributed form. **CC uses min-label
+propagation (differs from union-find elsewhere), so CC speedups mix algorithm and execution
+mode.** TC replicates the CSR on every rank (memory grows with ranks). `threads` column = ranks
+when `impl=mpi`. `compute_s` = max over ranks incl. communication; `comm_s` = max time in MPI
+calls; `setup_s` = graph distribution; `e2e_s = load + preprocess + setup + compute`.
+
 **Timing:** `load_s` = file parse + CSR build. `preprocess_s` = symmetrization / transpose /
 weight generation for that algorithm. `compute_s` = algorithm call incl. its internal
 allocation. `e2e_s = load_s + preprocess_s + compute_s`. Warm-up runs are discarded.

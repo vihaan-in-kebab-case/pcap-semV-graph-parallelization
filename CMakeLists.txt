@@ -39,3 +39,23 @@ add_test(NAME sequential COMMAND test_sequential)
 add_executable(test_openmp tests/correctness/test_openmp.cpp)
 target_link_libraries(test_openmp PRIVATE gps_seq gps_omp)
 add_test(NAME openmp COMMAND test_openmp)
+
+find_package(MPI)
+if(MPI_CXX_FOUND)
+  add_library(gps_mpi
+    src/mpi/dist_graph.cpp
+    src/mpi/bfs.cpp
+    src/mpi/pagerank.cpp
+    src/mpi/connected_components.cpp
+    src/mpi/sssp.cpp
+    src/mpi/triangle_counting.cpp)
+  target_link_libraries(gps_mpi PUBLIC gps_common MPI::MPI_CXX)
+
+  add_executable(gps_bench_mpi src/mpi_bench_main.cpp)
+  target_link_libraries(gps_bench_mpi PRIVATE gps_mpi gps_seq)
+
+  add_executable(test_mpi tests/correctness/test_mpi.cpp)
+  target_link_libraries(test_mpi PRIVATE gps_mpi gps_seq)
+else()
+  message(STATUS "MPI not found: skipping MPI targets")
+endif()
