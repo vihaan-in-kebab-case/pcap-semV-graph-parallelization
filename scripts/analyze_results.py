@@ -19,5 +19,6 @@ par = out[out.impl != "seq"].join(seq, on=["dataset", "algorithm"], rsuffix="_se
 par["speedup_compute"] = par.compute_med_seq / par.compute_med
 par["speedup_e2e"] = par.e2e_med_seq / par.e2e_med
 par["efficiency"] = par.speedup_compute / par.threads
+par.loc[par.impl == "cuda", "efficiency"] = float("nan")
 print("\n", par[["dataset", "algorithm", "impl", "threads", "speedup_compute",
                  "speedup_e2e", "efficiency"]].to_string(index=False))

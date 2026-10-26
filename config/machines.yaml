@@ -1,0 +1,8 @@
+mac-dev:
+  {
+    openmp: { threads: [1, 2, 4, 8] },
+    mpi: { ranks: [1, 2, 4] },
+    dev_only: true,
+  }
+gpu-pod:
+  { cuda: { architectures: [75] }, openmp: { threads: [1, 2, 4, 8, 16] } }

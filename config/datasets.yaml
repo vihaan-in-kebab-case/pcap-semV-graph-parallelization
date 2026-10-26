@@ -1,0 +1,31 @@
+# One entry per benchmark graph. Files live in datasets/graphs/ (gitignored).
+graphs:
+  facebook:
+    file: facebook_combined.txt
+    url: https://snap.stanford.edu/data/facebook_combined.txt.gz
+    sha256: f41c026ed8af3cc3359f1ca5573d0605fb09ae0eefa34544b820fd8c6e2ef296
+    family: social
+    source: SNAP ego-Facebook
+    directed: false
+    stored_once_per_edge: true # => run with --undirected
+    flags: [--undirected]
+    published: { nodes: 4039, edges: 88234 }
+    role: [correctness, small-benchmark]
+
+  web-google:
+    file: web-Google.txt
+    url: https://snap.stanford.edu/data/web-Google.txt.gz
+    sha256: 8c0f453f1eb1e24ad145e36e542b129083237e96e585abae768927bdb70167d1
+    family: web
+    source: SNAP web-Google
+    directed: true
+    flags: []
+    published: { nodes: 875713, edges: 5105039 }
+    role: [benchmark]
+
+  tiny:
+    file: tests/tiny_graphs/tiny.el # committed, hand-checkable
+    family: synthetic
+    directed: true
+    flags: []
+    role: [correctness]

@@ -130,6 +130,21 @@ Depending on the experiment, measurements will include:
 
 Repeated experiments will report median runtime and interquartile range (IQR). CUDA kernel timing and end-to-end timing will use appropriate synchronization and clearly documented measurement boundaries.
 
+### Timing contract
+
+Every implementation records the relevant components separately:
+
+- Graph loading and preprocessing.
+- Memory allocation.
+- Host-to-device and device-to-host transfers.
+- Policy feature extraction.
+- Classifier inference.
+- Strategy or work-queue setup.
+- Kernel/compute execution.
+- MPI communication, where applicable.
+- End-to-end runtime.
+Use CUDA events for GPU execution timing and synchronized wall-clock measurements for end-to-end time. Clearly define whether preprocessing is included in each headline result; never compare a kernel-only measurement against another implementation's end-to-end runtime.
+
 ## Repository structure
 
 The repository is organized to separate stable implementations, optimization strategies, experiments, and analysis.

@@ -1,0 +1,34 @@
+run:
+  trials: 5
+  warmup: 1
+  seed: 42
+  source_vertex: max_out_degree
+
+algorithms: [bfs, pagerank, cc, sssp, tc]
+
+implementations:
+  sequential: {}
+  openmp:
+    {
+      threads: [1, 2, 4, 8, 16],
+      pin: { OMP_PROC_BIND: close, OMP_PLACES: cores },
+    }
+  mpi: { ranks: [1, 2, 4, 8, 16], single_node: true }
+  cuda: { device: 0, architectures: auto }
+
+graphs: [facebook, web-google]
+
+parameters:
+  pagerank:
+    { damping: 0.85, tolerance: 1.0e-8, max_iterations: 100, dangling: uniform }
+  cc: { semantics: weakly_connected }
+  tc: { count: each_triangle_once, graph: symmetrized_simple }
+
+validation:
+  pagerank_l1_vs_sequential: 1.0e-7
+  exact: [bfs, sssp, cc, tc]
+
+timing:
+  compute: algorithm_only
+  e2e: load+preprocess+setup+compute
+  speedup_basis: compute

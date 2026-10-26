@@ -12,7 +12,7 @@ unless `--undirected` (symmetrized). Weights: integer in [1,100], hash of (seed,
 | SSSP | as loaded, weighted | uint64 distance, UINT64_MAX = unreachable, non-negative weights | optimality validator (relaxed + tight predecessor) |
 | TC | symmetrized simple graph | each triangle counted once | independent 3x edge-wise count |
 
-## Algorithm choices (identical in every implementation)
+## Algorithm choices (identical in every implementation except MPI)
 BFS: level-synchronous frontier. PageRank: pull over transposed CSR. CC: union-find,
 larger root under smaller. SSSP: frontier-based label-correcting. TC: sorted-list merge
 intersection (u < v < w). Sequential = the same algorithm on one thread. Dijkstra and
@@ -25,6 +25,12 @@ propagation (differs from union-find elsewhere), so CC speedups mix algorithm an
 mode.** TC replicates the CSR on every rank (memory grows with ranks). `threads` column = ranks
 when `impl=mpi`. `compute_s` = max over ranks incl. communication; `comm_s` = max time in MPI
 calls; `setup_s` = graph distribution; `e2e_s = load + preprocess + setup + compute`.
+
+## CUDA
+Same algorithms as seq/OpenMP; vanilla thread-per-vertex mapping, no tuning. `compute_s` = CUDA
+events (first kernel to last, incl. per-round control copies). `alloc_s`, `d2h_s` = wall time
+around cudaMalloc / result downloads; `h2d_s` = graph upload (once per run). `e2e_s` = load +
+preprocess + graph alloc/upload + trial wall time (includes cudaFree).
 
 **Timing:** `load_s` = file parse + CSR build. `preprocess_s` = symmetrization / transpose /
 weight generation for that algorithm. `compute_s` = algorithm call incl. its internal
