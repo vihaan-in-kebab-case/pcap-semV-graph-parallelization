@@ -79,7 +79,7 @@ inconclusive runs is a stated project principle.
 
 ## Supporting folders
 `datasets/` (README with sources and checksums; graphs in gitignored `graphs/`), `docs/` (scope,
-briefs, protocols, this guide), `environment/` (machine and software record, Dockerfile).
+briefs, protocols, this guide).
 
 ## Where Phase 2 plugs in
 Optimized CUDA variants go in `src/policies/` with `include/execution_policy.hpp`; their tests in
