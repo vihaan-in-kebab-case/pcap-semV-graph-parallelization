@@ -1,0 +1,150 @@
+{
+  "time": "2026-11-01T17:18:27",
+  "algo": "pagerank",
+  "graph": {
+    "path": "datasets/graphs/web-Google.txt",
+    "format": "edge-list",
+    "directed": true,
+    "directed_source": "datasets/manifest.csv",
+    "converted_path": null,
+    "name": "web-google"
+  },
+  "machine": {
+    "os": "Darwin 24.3.0",
+    "arch": "arm64",
+    "cpu": "Apple M2",
+    "cores": 8,
+    "logical": 8,
+    "gpu": null,
+    "bins": {
+      "gps_bench": true,
+      "gps_bench_mpi": true,
+      "gps_bench_cuda": false
+    },
+    "mpi": true,
+    "gpu_usable": false
+  },
+  "features": {
+    "n": 875713,
+    "m": 5105039,
+    "mean_degree": 5.82958001,
+    "degree_skew": 78.2217585,
+    "out_cv": 1.13107587,
+    "in_cv": 6.72929614,
+    "dangling_frac": 0.155597781,
+    "symmetric": 0,
+    "load_s": 3.27151237,
+    "extract_s": 0.011501917
+  },
+  "candidates": [
+    [
+      "seq",
+      1
+    ],
+    [
+      "omp",
+      2
+    ],
+    [
+      "omp",
+      4
+    ],
+    [
+      "omp",
+      8
+    ],
+    [
+      "mpi",
+      2
+    ],
+    [
+      "mpi",
+      4
+    ],
+    [
+      "mpi",
+      8
+    ]
+  ],
+  "excluded": [
+    "CUDA: no usable GPU or gps_bench_cuda not built"
+  ],
+  "decision": {
+    "policy": "knn",
+    "chosen": [
+      "omp",
+      4
+    ],
+    "reason": "highest predicted speedup 3.56x among 7 candidates",
+    "neighbors": [
+      {
+        "graph": "rmat_n16_d8",
+        "family": "rmat",
+        "distance": 2.8741909373795878,
+        "best": "OpenMP x4",
+        "best_speedup": 3.008909768480061
+      },
+      {
+        "graph": "rmat_n16_d2",
+        "family": "rmat",
+        "distance": 2.9668903483962366,
+        "best": "OpenMP x4",
+        "best_speedup": 3.5967039780320644
+      },
+      {
+        "graph": "rmat_n18_d8",
+        "family": "rmat",
+        "distance": 3.0248623683064877,
+        "best": "OpenMP x8",
+        "best_speedup": 7.296795741321874
+      }
+    ],
+    "predicted_log_speedup": {
+      "seq@1": 0.0,
+      "omp@2": 0.6399885235921042,
+      "omp@4": 1.2695511810395925,
+      "omp@8": 1.0875572990889686,
+      "mpi@2": 0.18393170968271108,
+      "mpi@4": 0.33403531327116537,
+      "mpi@8": -0.8650705204146956
+    },
+    "train": "/Users/vian/Documents/pcap_lab/pcap-graph-project/results/processed/sweep_mac_dataset.csv"
+  },
+  "run": {
+    "ok": true,
+    "correct": true,
+    "decision_cost_s": 0.37718300400000015,
+    "process_wall_s": 5.921273334002763,
+    "driver_summary": [
+      "[pagerank] n=875713 m=5105039 preprocess=0.0397062s median_compute=0.377183s correct=yes",
+      "      iters=90 residual=8.87033e-09 top_vertex=568619 top_rank=0.000923725"
+    ],
+    "load_s": 2.92545404,
+    "preprocess_s": 0.039706166,
+    "setup_s": null,
+    "alloc_s": null,
+    "h2d_s": null,
+    "d2h_s": null,
+    "compute_s": 0.377183,
+    "comm_s": null,
+    "e2e_s": 3.34234321
+  },
+  "timing": {
+    "ingest_s": 0.0011107500031357631,
+    "feature_wall_s": 3.2963378339991323,
+    "decide_s": 0.014310541002487298,
+    "selection_overhead_s": 3.3106483750016196,
+    "one_shot_total_s": 6.6541023350047555,
+    "demo_wall_s": 9.251508166998974
+  },
+  "verify": {
+    "OpenMP x4": 0.37718300400000015,
+    "OpenMP x8": 0.657430715,
+    "OpenMP x2": 0.700542715,
+    "MPI x2": 0.8759370070000001,
+    "sequential": 1.3788032960000005,
+    "MPI x4": 1.4363939960000005,
+    "MPI x8": 5.091914045000001
+  },
+  "verify_regret": 0.0
+}

@@ -1,0 +1,127 @@
+{
+  "time": "2026-11-02T12:33:53",
+  "algo": "pagerank",
+  "graph": {
+    "path": "/var/folders/31/25d9cn1x20q5p246b2r8h25r0000gn/T/gps_up_b2qzmsqe/grid_n20.txt",
+    "format": "edge-list",
+    "directed": false,
+    "directed_source": "datasets/manifest.csv",
+    "converted_path": null,
+    "name": "grid_n20"
+  },
+  "machine": {
+    "os": "Darwin 24.3.0",
+    "arch": "arm64",
+    "cpu": "Apple M2",
+    "cores": 8,
+    "logical": 8,
+    "gpu": null,
+    "bins": {
+      "gps_bench": true,
+      "gps_bench_mpi": true,
+      "gps_bench_cuda": false
+    },
+    "mpi": true,
+    "gpu_usable": false
+  },
+  "features": {
+    "n": 1048576,
+    "m": 4190208,
+    "mean_degree": 3.99609375,
+    "degree_skew": 1.00097752,
+    "out_cv": 0.0156249925,
+    "dangling_frac": 0,
+    "symmetric": 1,
+    "load_s": 0.655570625,
+    "extract_s": 0.000956875
+  },
+  "candidates": [
+    [
+      "seq",
+      1
+    ],
+    [
+      "omp",
+      2
+    ],
+    [
+      "omp",
+      4
+    ],
+    [
+      "omp",
+      8
+    ],
+    [
+      "mpi",
+      2
+    ],
+    [
+      "mpi",
+      4
+    ],
+    [
+      "mpi",
+      8
+    ]
+  ],
+  "excluded": [
+    "CUDA: no usable GPU or gps_bench_cuda not built"
+  ],
+  "decision": {
+    "policy": "tree",
+    "chosen": [
+      "omp",
+      4
+    ],
+    "reason": "highest predicted speedup 2.93x among 7 options",
+    "neighbors": null,
+    "predicted_log_speedup": {
+      "mpi@2": 0.20325993667968248,
+      "mpi@4": 0.2188915063997697,
+      "mpi@8": -1.2689143710395903,
+      "omp@2": 0.6133560861024632,
+      "omp@4": 1.0755681212044883,
+      "omp@8": 0.9436351273089988,
+      "seq@1": 0.0
+    },
+    "train": null
+  },
+  "run": {
+    "ok": true,
+    "correct": true,
+    "decision_cost_s": 0.053891084,
+    "process_wall_s": 1.038702290999936,
+    "driver_summary": [
+      "[pagerank] n=1048576 m=4190208 preprocess=0.0109677s median_compute=0.0538911s correct=yes",
+      "      iters=44 residual=9.78172e-09 top_vertex=1025 top_rank=1.10223e-06"
+    ],
+    "load_s": 0.665981791,
+    "preprocess_s": 0.010967708,
+    "setup_s": null,
+    "alloc_s": null,
+    "h2d_s": null,
+    "d2h_s": null,
+    "compute_s": 0.053891084,
+    "comm_s": null,
+    "e2e_s": 0.730840583
+  },
+  "timing": {
+    "ingest_s": 0.0009978340094676241,
+    "feature_wall_s": 0.6673990840063198,
+    "decide_s": 0.0005345420067897066,
+    "selection_overhead_s": 0.0014914170067897067,
+    "one_shot_total_s": 0.7333298340162573,
+    "demo_wall_s": 1.7173075000027893
+  },
+  "verify": {
+    "OpenMP x4": 0.053891084,
+    "OpenMP x8": 0.05957283400000006,
+    "OpenMP x2": 0.0711160000000001,
+    "MPI x2": 0.10018400000000001,
+    "sequential": 0.12658762499999998,
+    "MPI x4": 0.14976599999999995,
+    "MPI x8": 0.24792599900000004
+  },
+  "verify_regret": 0.0
+}

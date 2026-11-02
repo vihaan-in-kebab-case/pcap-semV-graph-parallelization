@@ -1,0 +1,117 @@
+{
+  "time": "2026-11-02T12:33:06",
+  "algo": "bfs",
+  "graph": {
+    "path": "/var/folders/31/25d9cn1x20q5p246b2r8h25r0000gn/T/gps_up_4hu0qnq5/grid_n20.txt",
+    "format": "edge-list",
+    "directed": false,
+    "directed_source": "datasets/manifest.csv",
+    "converted_path": null,
+    "name": "grid_n20"
+  },
+  "machine": {
+    "os": "Darwin 24.3.0",
+    "arch": "arm64",
+    "cpu": "Apple M2",
+    "cores": 8,
+    "logical": 8,
+    "gpu": null,
+    "bins": {
+      "gps_bench": true,
+      "gps_bench_mpi": true,
+      "gps_bench_cuda": false
+    },
+    "mpi": true,
+    "gpu_usable": false
+  },
+  "features": {
+    "n": 1048576,
+    "m": 4190208,
+    "mean_degree": 3.99609375,
+    "degree_skew": 1.00097752,
+    "out_cv": 0.0156249925,
+    "dangling_frac": 0,
+    "symmetric": 1,
+    "load_s": 0.694953416,
+    "extract_s": 0.00091075
+  },
+  "candidates": [
+    [
+      "seq",
+      1
+    ],
+    [
+      "omp",
+      2
+    ],
+    [
+      "omp",
+      4
+    ],
+    [
+      "omp",
+      8
+    ],
+    [
+      "mpi",
+      2
+    ],
+    [
+      "mpi",
+      4
+    ],
+    [
+      "mpi",
+      8
+    ]
+  ],
+  "excluded": [
+    "CUDA: no usable GPU or gps_bench_cuda not built"
+  ],
+  "decision": {
+    "policy": "tree",
+    "chosen": [
+      "seq",
+      1
+    ],
+    "reason": "no option predicted above 1.05x, so stay sequential",
+    "neighbors": null,
+    "predicted_log_speedup": {
+      "mpi@2": -1.1514748954986675,
+      "mpi@4": -1.3383984475021034,
+      "mpi@8": -3.526110561457316,
+      "omp@2": -1.3322083442748023,
+      "omp@4": -1.7706217165660387,
+      "omp@8": -2.3977516248089663,
+      "seq@1": 0.0
+    },
+    "train": null
+  },
+  "run": {
+    "ok": true,
+    "correct": true,
+    "decision_cost_s": 0.006885625000000006,
+    "process_wall_s": 0.7566208329953952,
+    "driver_summary": [
+      "[bfs] n=1048576 m=4190208 preprocess=0s median_compute=0.00688563s correct=yes",
+      "      source=1025 reached=1048576 max_level=2044"
+    ],
+    "load_s": 0.704333208,
+    "preprocess_s": 0.0,
+    "setup_s": null,
+    "alloc_s": null,
+    "h2d_s": null,
+    "d2h_s": null,
+    "compute_s": 0.006885625,
+    "comm_s": null,
+    "e2e_s": 0.711218833
+  },
+  "timing": {
+    "ingest_s": 0.0005627920036204159,
+    "feature_wall_s": 0.7203074159915559,
+    "decide_s": 0.0005030419997638091,
+    "selection_overhead_s": 0.0014137919997638092,
+    "one_shot_total_s": 0.7131954170033842,
+    "demo_wall_s": 1.493555541994283
+  }
+}

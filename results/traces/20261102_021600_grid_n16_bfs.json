@@ -1,0 +1,118 @@
+{
+  "time": "2026-11-02T02:16:00",
+  "algo": "bfs",
+  "graph": {
+    "path": "datasets/graphs/grid_n16.txt",
+    "format": "edge-list",
+    "directed": false,
+    "directed_source": "datasets/manifest.csv",
+    "converted_path": null,
+    "name": "grid_n16"
+  },
+  "machine": {
+    "os": "Darwin 24.3.0",
+    "arch": "arm64",
+    "cpu": "Apple M2",
+    "cores": 8,
+    "logical": 8,
+    "gpu": null,
+    "bins": {
+      "gps_bench": true,
+      "gps_bench_mpi": true,
+      "gps_bench_cuda": false
+    },
+    "mpi": true,
+    "gpu_usable": false
+  },
+  "features": {
+    "n": 65536,
+    "m": 261120,
+    "mean_degree": 3.984375,
+    "degree_skew": 1.00392157,
+    "out_cv": 0.0312497597,
+    "in_cv": 0.0312497597,
+    "dangling_frac": 0,
+    "symmetric": 1,
+    "load_s": 0.053180375,
+    "extract_s": 0.001517875
+  },
+  "candidates": [
+    [
+      "seq",
+      1
+    ],
+    [
+      "omp",
+      2
+    ],
+    [
+      "omp",
+      4
+    ],
+    [
+      "omp",
+      8
+    ],
+    [
+      "mpi",
+      2
+    ],
+    [
+      "mpi",
+      4
+    ],
+    [
+      "mpi",
+      8
+    ]
+  ],
+  "excluded": [
+    "CUDA: no usable GPU or gps_bench_cuda not built"
+  ],
+  "decision": {
+    "policy": "knn",
+    "chosen": [
+      "seq",
+      1
+    ],
+    "reason": "no option predicted above 1.05x, so stay sequential",
+    "neighbors": null,
+    "predicted_log_speedup": {
+      "seq@1": 0.0,
+      "omp@2": -1.653034440972381,
+      "omp@4": -1.910429842692811,
+      "omp@8": -2.713185724576258,
+      "mpi@2": -1.495232516315535,
+      "mpi@4": -1.9329145678304744,
+      "mpi@8": -3.0267544601692387
+    },
+    "train": "results/processed/sweep_mac_dataset.csv"
+  },
+  "run": {
+    "ok": true,
+    "correct": true,
+    "decision_cost_s": 0.0003187909999999988,
+    "process_wall_s": 0.06258024999988265,
+    "driver_summary": [
+      "[bfs] n=65536 m=261120 preprocess=0s median_compute=0.000318791s correct=yes",
+      "      source=257 reached=65536 max_level=508"
+    ],
+    "load_s": 0.052352084,
+    "preprocess_s": 0.0,
+    "setup_s": null,
+    "alloc_s": null,
+    "h2d_s": null,
+    "d2h_s": null,
+    "compute_s": 0.000318791,
+    "comm_s": null,
+    "e2e_s": 0.052670875
+  },
+  "timing": {
+    "ingest_s": 0.0010491669963812456,
+    "feature_wall_s": 0.06436895800288767,
+    "decide_s": 0.014040708003449254,
+    "selection_overhead_s": 0.07840966600633692,
+    "one_shot_total_s": 0.13212970800271817,
+    "demo_wall_s": 0.1569345419993624
+  }
+}

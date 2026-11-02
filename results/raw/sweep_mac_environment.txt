@@ -1,0 +1,12 @@
+date_utc: 2026-11-01T10:37:04Z
+git_commit: e14ed7672bca597cfe340684b49400c9c6c52465
+git_uncommitted_files: 9
+uname: Darwin vihaans-mac 24.3.0 Darwin Kernel Version 24.3.0: Thu Jan  2 20:23:36 PST 2025; root:xnu-11215.81.4~3/RELEASE_ARM64_T8112 arm64
+cpu: Apple M2
+cores_physical: 8
+cores_logical: 8
+memory_bytes: 8589934592
+cmake: cmake version 4.4.4
+cxx: Apple clang version 17.0.0 (clang-1700.0.13.5)
+mpi: mpirun (Open MPI) 5.0.11
+omp_env: OMP_PROC_BIND=unset OMP_PLACES=unset

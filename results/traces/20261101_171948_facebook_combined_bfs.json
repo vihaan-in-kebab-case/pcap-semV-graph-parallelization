@@ -1,0 +1,110 @@
+{
+  "time": "2026-11-01T17:19:48",
+  "algo": "bfs",
+  "graph": {
+    "path": "datasets/graphs/facebook_combined.txt",
+    "format": "edge-list",
+    "directed": false,
+    "directed_source": "datasets/manifest.csv",
+    "converted_path": null,
+    "name": "facebook"
+  },
+  "machine": {
+    "os": "Darwin 24.3.0",
+    "arch": "arm64",
+    "cpu": "Apple M2",
+    "cores": 8,
+    "logical": 8,
+    "gpu": null,
+    "bins": {
+      "gps_bench": true,
+      "gps_bench_mpi": true,
+      "gps_bench_cuda": false
+    },
+    "mpi": true,
+    "gpu_usable": false
+  },
+  "features": {
+    "n": 4039,
+    "m": 176468,
+    "mean_degree": 43.6910126,
+    "degree_skew": 23.9179625,
+    "out_cv": 1.1996544,
+    "in_cv": 1.1996544,
+    "dangling_frac": 0,
+    "symmetric": 1,
+    "load_s": 0.038345667,
+    "extract_s": 0.006768208
+  },
+  "candidates": [
+    [
+      "seq",
+      1
+    ],
+    [
+      "omp",
+      2
+    ],
+    [
+      "omp",
+      4
+    ],
+    [
+      "omp",
+      8
+    ],
+    [
+      "mpi",
+      2
+    ],
+    [
+      "mpi",
+      4
+    ],
+    [
+      "mpi",
+      8
+    ]
+  ],
+  "excluded": [
+    "CUDA: no usable GPU or gps_bench_cuda not built"
+  ],
+  "decision": {
+    "policy": "rule",
+    "chosen": [
+      "omp",
+      8
+    ],
+    "reason": "large enough to parallelize: OpenMP on all cores",
+    "neighbors": null,
+    "predicted_log_speedup": {},
+    "train": null
+  },
+  "run": {
+    "ok": true,
+    "correct": true,
+    "decision_cost_s": 0.0003367499999999968,
+    "process_wall_s": 0.04657095800212119,
+    "driver_summary": [
+      "[bfs] n=4039 m=176468 preprocess=0s median_compute=0.00033675s correct=yes",
+      "      source=107 reached=4039 max_level=5"
+    ],
+    "load_s": 0.033024042,
+    "preprocess_s": 0.0,
+    "setup_s": null,
+    "alloc_s": null,
+    "h2d_s": null,
+    "d2h_s": null,
+    "compute_s": 0.00033675,
+    "comm_s": null,
+    "e2e_s": 0.033360792
+  },
+  "timing": {
+    "ingest_s": 0.001276583003345877,
+    "feature_wall_s": 0.05611358299938729,
+    "decide_s": 4.1958999645430595e-05,
+    "selection_overhead_s": 0.05615554199903272,
+    "one_shot_total_s": 0.0907929170023786,
+    "demo_wall_s": 0.12013883399777114
+  }
+}
