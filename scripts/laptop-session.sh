@@ -30,6 +30,9 @@ if want build; then
   echo "== build =="
   scripts/fetch-datasets.sh
   if [ ! -f datasets/graphs/uniform_n10_d8.txt ]; then python datasets/generators/generate_graphs.py --preset demo; fi
+  if [ ! -f datasets/demo_graphs/demo_uniform_n20_d8.txt ]; then
+    python datasets/generators/generate_graphs.py --seed 999 --out datasets/demo_graphs --manifest datasets/manifest_demo.csv --prefix demo_ --no-real --spec rmat:12:8 --spec rmat:18:8 --spec grid:18:0 --spec smallworld:16:8 --spec uniform:20:8
+  fi
   sha256sum datasets/graphs/uniform_n10_d8.txt
   echo "(compare this hash with the same file on the Mac; if it differs, copy datasets/graphs/ from the Mac)"
   scripts/build.sh
@@ -47,12 +50,19 @@ if want sweep; then
   scripts/extract-features.sh
   scripts/run-all.sh cuda openmp mpi
   python selector/build_dataset.py --tag "$RUN_TAG"
+  echo "== demo graphs (kept out of training) =="
+  MANIFEST="$ROOT/datasets/manifest_demo.csv" GRAPHS_DIR="$ROOT/datasets/demo_graphs" RUN_TAG="${RUN_TAG}_demo" GRAPHS=all scripts/extract-features.sh
+  MANIFEST="$ROOT/datasets/manifest_demo.csv" GRAPHS_DIR="$ROOT/datasets/demo_graphs" RUN_TAG="${RUN_TAG}_demo" GRAPHS=all scripts/run-all.sh cuda openmp mpi
+  python selector/build_dataset.py --tag "${RUN_TAG}_demo" --manifest "$ROOT/datasets/manifest_demo.csv"
+  python selector/train.py --dataset "results/processed/${RUN_TAG}_dataset.csv"
+  python selector/evaluate.py --dataset "results/processed/${RUN_TAG}_dataset.csv" --show-tree | tee "results/processed/${RUN_TAG}_evaluation.txt"
 fi
 
 if want package; then
   echo "== package =="
   out="$ROOT/results_${RUN_TAG}.tgz"
-  files="$(ls results/raw/${RUN_TAG}_* results/features/${RUN_TAG}_features.jsonl results/processed/${RUN_TAG}_dataset.csv 2>/dev/null || true)"
+  files="$(ls results/raw/${RUN_TAG}_* results/features/${RUN_TAG}*_features.jsonl results/processed/${RUN_TAG}*_dataset.csv results/processed/${RUN_TAG}_evaluation.txt results/models/${RUN_TAG}_tree.json 2>/dev/null || true)"
+  if [ -d "results/figures/selector_${RUN_TAG}" ]; then files="$files results/figures/selector_${RUN_TAG}"; fi
   if [ -d results/traces ]; then files="$files results/traces"; fi
   tar czf "$out" $files
   echo "created $out"

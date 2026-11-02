@@ -3,8 +3,7 @@ datasets/graphs/*
 build
 .venv
 docs/briefs/*
-datasets/demo_graphs/*datasets/graphs/
-datasets/demo_graphs/
+datasets/demo_graphs/*
 build/
 .venv/
 *.tgz

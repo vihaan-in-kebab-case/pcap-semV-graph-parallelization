@@ -90,10 +90,12 @@ def main():
     ap.add_argument("--seed", type=int, default=12345)
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--spec", action="append", help="family:log2n:d, repeatable; overrides --preset")
+    ap.add_argument("--prefix", default="")
+    ap.add_argument("--no-real", action="store_true")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
 
-    rows = [
+    rows = [] if args.no_real else [
         ["facebook", "social", "snap", 0, "facebook_combined.txt", 4039, "", ""],
         ["web-google", "web", "snap", 1, "web-Google.txt", 875713, "", ""],
     ]
@@ -101,6 +103,7 @@ def main():
              if args.spec else preset_specs(args.preset))
     for family, log2n, d in specs:
         name, n, edges, directed = make(family, log2n, d, args.seed)
+        name = args.prefix + name
         fname = f"{name}.txt"
         path = os.path.join(args.out, fname)
         rows.append([name, family, "synthetic", 1 if directed else 0, fname, n, d if d else "", args.seed])

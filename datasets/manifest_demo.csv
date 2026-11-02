@@ -1,0 +1,6 @@
+name,family,source,directed,file,n,d,seed
+demo_rmat_n12_d8,rmat,synthetic,1,demo_rmat_n12_d8.txt,4096,8,999
+demo_rmat_n18_d8,rmat,synthetic,1,demo_rmat_n18_d8.txt,262144,8,999
+demo_grid_n18,grid,synthetic,0,demo_grid_n18.txt,262144,,999
+demo_smallworld_n16_d8,smallworld,synthetic,0,demo_smallworld_n16_d8.txt,65536,8,999
+demo_uniform_n20_d8,uniform,synthetic,1,demo_uniform_n20_d8.txt,1048576,8,999
