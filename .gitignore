@@ -7,3 +7,5 @@ datasets/demo_graphs/*
 build/
 .venv/
 *.tgz
+scripts/make*.py
+report/make_*.py
