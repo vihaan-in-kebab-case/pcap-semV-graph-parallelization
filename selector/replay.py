@@ -58,6 +58,7 @@ def main():
     ap.add_argument("--k", type=int, default=3)
     ap.add_argument("--min-gain", type=float, default=1.05)
     ap.add_argument("--list", action="store_true")
+    ap.add_argument("--no-gpu", action="store_true", help="simulate a machine without a GPU")
     a = ap.parse_args()
 
     train = policies.load_train(a.train)
@@ -74,7 +75,8 @@ def main():
         sys.exit(f"no recorded data for {key}; use --list to see what exists")
     inst = queries[key]
     qtag, ttag = tag_of(a.queries or a.train), tag_of(a.train)
-    cands = [c for c in inst["scores"] if c == policies.SEQ or c[0] == "cuda" or c[1] > 1]
+    cands = [c for c in inst["scores"]
+             if c == policies.SEQ or (c[0] == "cuda" and not a.no_gpu) or (c[0] != "cuda" and c[1] > 1)]
     exclude = {a.graph} if (not a.queries or a.queries == a.train) else set()
 
     print("=== REPLAY: recorded measurements; nothing is executing on a GPU now ===")
@@ -85,6 +87,8 @@ def main():
     print(f"[features] n~{round(10 ** v[0]):,} mean_degree={10 ** v[1] - 1:.3g} degree_skew={10 ** v[2] - 1:.3g} "
           f"out_cv={v[3]:.3g} dangling={v[4]:.3g} symmetric={bool(v[5])}")
     print("[options]  " + ", ".join(policies.cfg_label(c) for c in cands))
+    if a.no_gpu:
+        print("[gpu]      GPU absent (simulated): CUDA excluded from the options; policy trained on CPU options only")
 
     kw = dict(k=a.k, min_gain=a.min_gain)
     policies.decide(a.policy, train, a.algo, v, cands, exclude, **kw)       # fit and cache (done offline)
@@ -107,6 +111,11 @@ def main():
         tag = "  <- chosen" if c == choice else ("  <- best" if i == 1 else "")
         print(f"  {i:2d}. {policies.cfg_label(c):12s} {fmt(D[c]):>10s}   speedup vs sequential "
               f"{(seq / D[c]) if seq else float('nan'):.2f}x{tag}")
+    if a.no_gpu:
+        for c in inst["scores"]:
+            if c[0] == "cuda":
+                print(f"   -  {policies.cfg_label(c):12s} excluded (no GPU); recorded on the GPU machine: "
+                      f"{fmt(inst['D'][c])}, {(seq / inst['D'][c]) if seq else float('nan'):.2f}x vs sequential")
     regret = D[choice] / D[ranked[0]] - 1
     print(f"regret vs best option: {100 * regret:.1f}%   (0% = picked the best)")
 

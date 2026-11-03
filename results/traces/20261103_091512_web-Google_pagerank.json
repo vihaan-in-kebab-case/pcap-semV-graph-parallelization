@@ -1,0 +1,127 @@
+{
+  "time": "2026-11-03T09:13:19",
+  "algo": "pagerank",
+  "graph": {
+    "path": "datasets/graphs/web-Google.txt",
+    "format": "edge-list",
+    "directed": true,
+    "directed_source": "datasets/manifest.csv",
+    "converted_path": null,
+    "name": "web-google"
+  },
+  "machine": {
+    "os": "Darwin 24.3.0",
+    "arch": "arm64",
+    "cpu": "Apple M2",
+    "cores": 8,
+    "logical": 8,
+    "gpu": null,
+    "bins": {
+      "gps_bench": true,
+      "gps_bench_mpi": true,
+      "gps_bench_cuda": false
+    },
+    "mpi": true,
+    "gpu_usable": false
+  },
+  "features": {
+    "n": 875713,
+    "m": 5105039,
+    "mean_degree": 5.82958001,
+    "degree_skew": 78.2217585,
+    "out_cv": 1.13107587,
+    "dangling_frac": 0.155597781,
+    "symmetric": 0,
+    "load_s": 2.86966879,
+    "extract_s": 0.0020415
+  },
+  "candidates": [
+    [
+      "seq",
+      1
+    ],
+    [
+      "omp",
+      2
+    ],
+    [
+      "omp",
+      4
+    ],
+    [
+      "omp",
+      8
+    ],
+    [
+      "mpi",
+      2
+    ],
+    [
+      "mpi",
+      4
+    ],
+    [
+      "mpi",
+      8
+    ]
+  ],
+  "excluded": [
+    "CUDA: no usable GPU or gps_bench_cuda not built"
+  ],
+  "decision": {
+    "policy": "tree",
+    "chosen": [
+      "omp",
+      4
+    ],
+    "reason": "highest predicted speedup 2.93x among 7 options",
+    "neighbors": null,
+    "predicted_log_speedup": {
+      "mpi@2": 0.16147936465361637,
+      "mpi@4": 0.2142836798735062,
+      "mpi@8": -1.1505076697921075,
+      "omp@2": 0.6102144158619143,
+      "omp@4": 1.0757307836775143,
+      "omp@8": 0.9219215385667588,
+      "seq@1": 0.0
+    },
+    "train": "results/processed/sweep_mac_dataset.csv"
+  },
+  "run": {
+    "ok": true,
+    "correct": true,
+    "decision_cost_s": 0.60463204,
+    "process_wall_s": 6.726972584001487,
+    "driver_summary": [
+      "[pagerank] n=875713 m=5105039 preprocess=0.0413147s median_compute=0.604632s correct=yes",
+      "      iters=90 residual=8.87033e-09 top_vertex=568619 top_rank=0.000923725"
+    ],
+    "load_s": 2.77680921,
+    "preprocess_s": 0.04131475,
+    "setup_s": null,
+    "alloc_s": null,
+    "h2d_s": null,
+    "d2h_s": null,
+    "compute_s": 0.604632041,
+    "comm_s": null,
+    "e2e_s": 3.422756
+  },
+  "timing": {
+    "ingest_s": 0.0009986670047510415,
+    "feature_wall_s": 2.8895624580036383,
+    "decide_s": 1.303409082989674,
+    "selection_overhead_s": 1.305450582989674,
+    "one_shot_total_s": 4.7292052499944255,
+    "demo_wall_s": 10.936682416999247
+  },
+  "verify": {
+    "OpenMP x8": 0.43730275299999977,
+    "OpenMP x4": 0.60463204,
+    "OpenMP x2": 0.966034456,
+    "sequential": 1.3869049579999995,
+    "MPI x4": 1.4461530030000005,
+    "MPI x2": 1.6619199999999998,
+    "MPI x8": 8.922159987999999
+  },
+  "verify_regret": 0.3826394548218186
+}

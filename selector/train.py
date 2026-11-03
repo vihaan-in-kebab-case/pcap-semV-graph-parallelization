@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Exports one decision tree per algorithm as plain JSON (no scikit-learn needed at query time).
+"""Exports decision trees per algorithm as plain JSON: one over all offered options ("all") and one over
+CPU options only ("cpu", used when no GPU is available).
 usage: train.py --dataset results/processed/sweep_mac_dataset.csv [--out results/models/<tag>_tree.json]
 """
 import argparse
@@ -29,18 +30,24 @@ def main():
     tag = os.path.basename(args.dataset).replace("_dataset.csv", "")
     out = args.out or os.path.join("results", "models", f"{tag}_tree.json")
     train = policies.load_train(args.dataset)
-    models = {}
+    models, has_cuda = {}, False
     for algo in ALGOS:
         pool = [(g, e) for (g, a), e in train.items() if a == algo]
         if len(pool) < 5:
             continue
-        model, cfgs = policies.fit_tree(pool)
-        models[algo] = export(model, cfgs)
-        print(f"\n--- {algo}: tree fit on {len(pool)} graphs ---")
-        print(policies.tree_to_text(model, cfgs))
+        offered = {c for _, e in pool for c in e["scores"] if c == policies.SEQ or c[0] == "cuda" or c[1] > 1}
+        has_cuda = has_cuda or any(c[0] == "cuda" for c in offered)
+        variants = {"all": offered, "cpu": {c for c in offered if c[0] != "cuda"}}
+        models[algo] = {}
+        for label, allowed in variants.items():
+            model, cfgs = policies.fit_tree(policies.restrict_pool(pool, allowed))
+            models[algo][label] = export(model, cfgs)
+            print(f"\n--- {algo} [{label}]: tree fit on {len(pool)} graphs ---")
+            print(policies.tree_to_text(model, cfgs))
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w") as f:
-        json.dump({"dataset": args.dataset, "features": policies.FEATURE_NAMES, "models": models}, f)
+        json.dump({"dataset": args.dataset, "features": policies.FEATURE_NAMES, "has_cuda": has_cuda,
+                   "models": models}, f)
     print(f"\nwrote {out}")
 
 

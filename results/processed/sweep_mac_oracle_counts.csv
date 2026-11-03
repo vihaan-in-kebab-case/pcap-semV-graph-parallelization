@@ -1,0 +1,6 @@
+algo,mpi,omp,seq
+bfs,0,20,14
+cc,0,28,6
+pagerank,1,28,5
+sssp,0,20,14
+tc,0,33,1

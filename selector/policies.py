@@ -45,6 +45,12 @@ def _raw(j, x):   # feature index -> (readable name, raw value)
     if j == 2:
         return "degree_skew", 10 ** x - 1
     return FEATURE_NAMES[j], x
+    
+def restrict_pool(pool, cands):
+    """Keep only the options in `cands` in every training entry, so policies train on what exists."""
+    allowed = set(cands)
+    return [(g, {**e, "scores": {c: s for c, s in e["scores"].items() if c in allowed},
+                 "D": {c: d for c, d in e["D"].items() if c in allowed}}) for g, e in pool]
 
 def _sc(e, cfg):   # missing configuration -> pessimistic (worst measured for that graph)
     s = e["scores"]
@@ -195,27 +201,34 @@ def tree_json_scores(model, vec, cands):
     return scores, path
 
 # ---------------------------------------------------------------- entry point
+def _pick(scores, min_gain, info):
+    if not scores:
+        return SEQ, None, "no scored options", info
+    best = max(scores, key=scores.get)
+    reason = f"highest predicted speedup {math.exp(scores[best]):.2f}x among {len(scores)} options"
+    if scores[best] < math.log(min_gain):
+        best, reason = SEQ, f"no option predicted above {min_gain}x, so stay sequential"
+    return best, scores, reason, info
+
+
 def decide(name, train, algo, vec, cands, exclude, k=3, min_gain=1.05, model=None):
-    """Returns (choice, scores or None, reason, info). info: policy_used, explain (list of lines)."""
-    info = {"policy_used": name, "explain": []}
+    """Policies only see, and choose among, the options in `cands`. With no CUDA option (no GPU) they are
+    trained on CPU options alone. Returns (choice, scores or None, reason, info)."""
+    info = {"policy_used": name, "explain": [], "gpu_absent": not any(c[0] == "cuda" for c in cands)}
     if name == "seq":
         return SEQ, None, "always sequential", info
     if name == "tree" and model is not None:
         m = model["models"].get(algo)
+        if m is not None and "cfgs" not in m:
+            m = m["cpu"] if info["gpu_absent"] else m["all"]
         if m is None:
             choice, reason = rule_default(vec, cands)
             info["policy_used"] = "rule (fallback: no trained tree for this algorithm)"
             return choice, None, reason, info
         scores, info["explain"] = tree_json_scores(m, vec, cands)
-        if not scores:
-            return SEQ, None, "no scored options", info
-        best = max(scores, key=scores.get)
-        reason = f"highest predicted speedup {math.exp(scores[best]):.2f}x among {len(scores)} options"
-        if scores[best] < math.log(min_gain):
-            best, reason = SEQ, f"no option predicted above {min_gain}x, so stay sequential"
-        return best, scores, reason, info
-    pool = _pool(train, algo, exclude)
-    key = (name, algo, frozenset(exclude), id(train))
+        return _pick(scores, min_gain, info)
+    pool = restrict_pool(_pool(train, algo, exclude), cands)
+    key = (name, algo, frozenset(exclude), frozenset(cands), id(train))
     if len(pool) < 5:
         choice, reason = rule_default(vec, cands)
         info["policy_used"] = "rule (fallback: fewer than 5 training graphs)"
@@ -234,10 +247,4 @@ def decide(name, train, algo, vec, cands, exclude, k=3, min_gain=1.05, model=Non
         scores, info["explain"] = tree_scores(pool, vec, cands, key)
     else:
         raise ValueError(f"unknown policy {name}")
-    if not scores:
-        return SEQ, None, "no scored options", info
-    best = max(scores, key=scores.get)
-    reason = f"highest predicted speedup {math.exp(scores[best]):.2f}x among {len(scores)} options"
-    if scores[best] < math.log(min_gain):
-        best, reason = SEQ, f"no option predicted above {min_gain}x, so stay sequential"
-    return best, scores, reason, info
+    return _pick(scores, min_gain, info)

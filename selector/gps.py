@@ -314,6 +314,8 @@ def main():
         say(f"              training data: {train_path}" + ("" if a.keep_self else "  (query graph held out)"))
     for line in dinfo["explain"]:
         say("              " + line)
+    if dinfo.get("gpu_absent"):
+        say("              GPU absent: CUDA excluded; the policy was trained and evaluated on CPU options only")
     if scores:
         say("              predicted speedup: " + ", ".join(
             f"{cfg_name(c)} {math.exp(s):.2f}x" for c, s in sorted(scores.items(), key=lambda kv: -kv[1])[:4]))
@@ -366,6 +368,8 @@ def main():
             sp = f"{seq_d / m['decision_cost_s']:.2f}x" if seq_d else "-"
             tag = "  <- chosen" if c == choice else ("  <- best" if rank == 1 else "")
             say(f"    {rank:2d}. {cfg_name(c):12s} {m['decision_cost_s']:.4g} s   speedup vs sequential {sp}{tag}")
+        for e in excluded:
+            say(f"     -  {e}  [excluded from the choice, not measured]")
         best = ordered[0][1]["decision_cost_s"]
         regret = res["decision_cost_s"] / best - 1
         say(f"    selector regret vs best option: {100 * regret:.1f}%   (0% = picked the best)")

@@ -56,6 +56,7 @@ if want sweep; then
   python selector/build_dataset.py --tag "${RUN_TAG}_demo" --manifest "$ROOT/datasets/manifest_demo.csv"
   python selector/train.py --dataset "results/processed/${RUN_TAG}_dataset.csv"
   python selector/evaluate.py --dataset "results/processed/${RUN_TAG}_dataset.csv" --show-tree | tee "results/processed/${RUN_TAG}_evaluation.txt"
+  python selector/evaluate.py --dataset "results/processed/${RUN_TAG}_dataset.csv" --no-gpu | tee "results/processed/${RUN_TAG}_evaluation_nogpu.txt"
 fi
 
 if want package; then
