@@ -1,0 +1,117 @@
+{
+  "time": "2026-11-03T08:35:28",
+  "algo": "sssp",
+  "graph": {
+    "path": "/var/folders/31/25d9cn1x20q5p246b2r8h25r0000gn/T/gps_up__ne7visr/web-Google.txt",
+    "format": "edge-list",
+    "directed": true,
+    "directed_source": "datasets/manifest.csv",
+    "converted_path": null,
+    "name": "web-google"
+  },
+  "machine": {
+    "os": "Darwin 24.3.0",
+    "arch": "arm64",
+    "cpu": "Apple M2",
+    "cores": 8,
+    "logical": 8,
+    "gpu": null,
+    "bins": {
+      "gps_bench": true,
+      "gps_bench_mpi": true,
+      "gps_bench_cuda": false
+    },
+    "mpi": true,
+    "gpu_usable": false
+  },
+  "features": {
+    "n": 875713,
+    "m": 5105039,
+    "mean_degree": 5.82958001,
+    "degree_skew": 78.2217585,
+    "out_cv": 1.13107587,
+    "dangling_frac": 0.155597781,
+    "symmetric": 0,
+    "load_s": 2.78062817,
+    "extract_s": 0.001945458
+  },
+  "candidates": [
+    [
+      "seq",
+      1
+    ],
+    [
+      "omp",
+      2
+    ],
+    [
+      "omp",
+      4
+    ],
+    [
+      "omp",
+      8
+    ],
+    [
+      "mpi",
+      2
+    ],
+    [
+      "mpi",
+      4
+    ],
+    [
+      "mpi",
+      8
+    ]
+  ],
+  "excluded": [
+    "CUDA: no usable GPU or gps_bench_cuda not built"
+  ],
+  "decision": {
+    "policy": "tree",
+    "chosen": [
+      "omp",
+      8
+    ],
+    "reason": "highest predicted speedup 3.37x among 7 options",
+    "neighbors": null,
+    "predicted_log_speedup": {
+      "mpi@2": -0.09374872314432843,
+      "mpi@4": -0.060559221064464056,
+      "mpi@8": -1.3260196905728319,
+      "omp@2": 0.6496591580556256,
+      "omp@4": 1.0014060570227314,
+      "omp@8": 1.2135586920522015,
+      "seq@1": 0.0
+    },
+    "train": null
+  },
+  "run": {
+    "ok": true,
+    "correct": true,
+    "decision_cost_s": 0.04526670700000004,
+    "process_wall_s": 3.0141905000054976,
+    "driver_summary": [
+      "[sssp] n=875713 m=5105039 preprocess=0.0286936s median_compute=0.0452667s correct=yes",
+      "      source=481807 weight_seed=42 reached=600493 max_dist=1258"
+    ],
+    "load_s": 2.74793196,
+    "preprocess_s": 0.028693583,
+    "setup_s": null,
+    "alloc_s": null,
+    "h2d_s": null,
+    "d2h_s": null,
+    "compute_s": 0.045266709,
+    "comm_s": null,
+    "e2e_s": 2.82189225
+  },
+  "timing": {
+    "ingest_s": 0.0005628750077448785,
+    "feature_wall_s": 2.8194676660059486,
+    "decide_s": 0.0008733330032555386,
+    "selection_overhead_s": 0.0028187910032555384,
+    "one_shot_total_s": 2.825273916011,
+    "demo_wall_s": 5.855992041993886
+  }
+}
