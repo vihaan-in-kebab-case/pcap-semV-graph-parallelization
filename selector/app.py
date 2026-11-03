@@ -90,7 +90,9 @@ function render(t,log){
     const seq=t.verify['sequential'];const e=Object.entries(t.verify).sort((a,b)=>a[1]-b[1]);
     h+='<div class="card"><h2>All options, measured (setup + compute)</h2><table><tr><th>Option</th><th>Time / speedup vs sequential</th></tr>'+
       e.map((x,i)=>'<tr><td>'+esc(x[0])+(x[0]===label(d.chosen)?' (chosen)':'')+(i===0?' (best)':'')+'</td><td>'+fmt(x[1])+
-      (seq?' / '+(seq/x[1]).toFixed(2)+'x':'')+'</td></tr>').join('')+'</table><p class="mute">Selector regret vs best: '+
+      (seq?' / '+(seq/x[1]).toFixed(2)+'x':'')+'</td></tr>').join('')+
+      (t.excluded||[]).map(x=>'<tr><td>'+esc(x)+'</td><td>excluded, not measured</td></tr>').join('')+
+      '</table><p class="mute">Selector regret vs best: '+
       (100*t.verify_regret).toFixed(1)+'% (0% = picked the best)</p></div>';
   }
   h+='<div class="card"><details><summary>Full log</summary><pre>'+esc(log)+'</pre></details></div>';
