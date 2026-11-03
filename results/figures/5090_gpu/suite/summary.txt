@@ -1,0 +1,36 @@
+5090_gpu [dropped: mpi]
+
+Fastest option count by algorithm (decision cost, selector-offered options):
+impl      cuda  omp  seq
+algo                    
+bfs          1   22   11
+pagerank     1   31    2
+cc           0   29    5
+sssp         5   23    6
+tc           4   30    0
+
+Geometric-mean compute speedup over sequential (best config per framework):
+impl      cuda   omp
+algo                
+bfs       0.23  1.51
+pagerank  0.60  4.00
+cc        1.56  2.41
+sssp      0.67  2.16
+tc        5.68  7.77
+
+CUDA geometric-mean speedup including alloc and transfers (decision-cost basis):
+algo
+bfs         0.10
+pagerank    0.46
+cc          0.24
+sssp        0.39
+tc          1.09
+
+Share of graphs where the framework beat sequential (compute time):
+impl      cuda   omp
+algo                
+bfs       0.29  0.68
+pagerank  0.47  0.94
+cc        0.50  0.85
+sssp      0.41  0.82
+tc        0.74  1.00

@@ -1,0 +1,170 @@
+
+--- bfs [all]: tree fit on 34 graphs ---
+if degree_skew <= 1.562:
+    if mean_degree <= 3.988:
+        -> sequential (predicted 1.00x, 4 graphs)
+    else:
+        -> sequential (predicted 1.00x, 4 graphs)
+else:
+    if n <= 6.492e+04:
+        if n <= 3463:
+            -> sequential (predicted 1.00x, 3 graphs)
+        else:
+            -> OpenMP x8 (predicted 2.14x, 13 graphs)
+    else:
+        if n <= 1.977e+05:
+            -> OpenMP x8 (predicted 3.62x, 4 graphs)
+        else:
+            -> OpenMP x16 (predicted 5.02x, 6 graphs)
+
+--- bfs [cpu]: tree fit on 34 graphs ---
+if degree_skew <= 1.562:
+    if mean_degree <= 3.988:
+        -> sequential (predicted 1.00x, 4 graphs)
+    else:
+        -> sequential (predicted 1.00x, 4 graphs)
+else:
+    if n <= 3463:
+        -> sequential (predicted 1.00x, 3 graphs)
+    else:
+        if n <= 6.492e+04:
+            -> OpenMP x8 (predicted 2.14x, 13 graphs)
+        else:
+            -> OpenMP x8 (predicted 4.27x, 10 graphs)
+
+--- pagerank [all]: tree fit on 34 graphs ---
+if n <= 1744:
+    -> sequential (predicted 1.00x, 4 graphs)
+else:
+    if n <= 3.284e+04:
+        if n <= 1.231e+04:
+            -> OpenMP x4 (predicted 2.50x, 7 graphs)
+        else:
+            -> OpenMP x8 (predicted 4.03x, 7 graphs)
+    else:
+        if mean_degree <= 3.994:
+            -> OpenMP x8 (predicted 5.30x, 3 graphs)
+        else:
+            -> OpenMP x8 (predicted 5.89x, 13 graphs)
+
+--- pagerank [cpu]: tree fit on 34 graphs ---
+if n <= 1744:
+    -> sequential (predicted 1.00x, 4 graphs)
+else:
+    if n <= 3.284e+04:
+        if out_cv <= 0.9451:
+            -> OpenMP x8 (predicted 2.90x, 8 graphs)
+        else:
+            -> OpenMP x8 (predicted 3.11x, 6 graphs)
+    else:
+        if mean_degree <= 4.841:
+            -> OpenMP x8 (predicted 4.96x, 4 graphs)
+        else:
+            -> OpenMP x16 (predicted 6.09x, 12 graphs)
+
+--- cc [all]: tree fit on 34 graphs ---
+if n <= 8996:
+    if degree_skew <= 1.437:
+        -> sequential (predicted 1.00x, 3 graphs)
+    else:
+        if n <= 3463:
+            -> sequential (predicted 1.00x, 3 graphs)
+        else:
+            -> OpenMP x8 (predicted 1.40x, 4 graphs)
+else:
+    if n <= 4.589e+04:
+        if mean_degree <= 7.999:
+            -> OpenMP x8 (predicted 2.40x, 4 graphs)
+        else:
+            -> OpenMP x8 (predicted 2.84x, 5 graphs)
+    else:
+        if mean_degree <= 4.841:
+            -> OpenMP x8 (predicted 2.59x, 4 graphs)
+        else:
+            -> OpenMP x16 (predicted 4.25x, 11 graphs)
+
+--- cc [cpu]: tree fit on 34 graphs ---
+if n <= 5495:
+    if mean_degree <= 7.977:
+        -> sequential (predicted 1.00x, 3 graphs)
+    else:
+        if n <= 3463:
+            -> sequential (predicted 1.00x, 3 graphs)
+        else:
+            -> OpenMP x8 (predicted 1.34x, 3 graphs)
+else:
+    if n <= 6.492e+04:
+        if mean_degree <= 7.999:
+            -> OpenMP x8 (predicted 2.26x, 6 graphs)
+        else:
+            -> OpenMP x8 (predicted 2.91x, 6 graphs)
+    else:
+        if degree_skew <= 1.687:
+            -> OpenMP x8 (predicted 2.75x, 4 graphs)
+        else:
+            -> OpenMP x16 (predicted 4.74x, 9 graphs)
+
+--- sssp [all]: tree fit on 34 graphs ---
+if n <= 5495:
+    if n <= 1744:
+        -> sequential (predicted 1.00x, 4 graphs)
+    else:
+        -> OpenMP x8 (predicted 1.18x, 5 graphs)
+else:
+    if n <= 9.884e+04:
+        if mean_degree <= 7.998:
+            -> OpenMP x8 (predicted 1.87x, 7 graphs)
+        else:
+            -> OpenMP x8 (predicted 3.15x, 9 graphs)
+    else:
+        if n <= 6.922e+05:
+            -> OpenMP x8 (predicted 4.38x, 5 graphs)
+        else:
+            -> CUDA (predicted 11.25x, 4 graphs)
+
+--- sssp [cpu]: tree fit on 34 graphs ---
+if n <= 1744:
+    -> sequential (predicted 1.00x, 4 graphs)
+else:
+    if n <= 5495:
+        -> OpenMP x8 (predicted 1.18x, 5 graphs)
+    else:
+        if n <= 9.884e+04:
+            -> OpenMP x8 (predicted 2.50x, 16 graphs)
+        else:
+            -> OpenMP x8 (predicted 4.69x, 9 graphs)
+
+--- tc [all]: tree fit on 34 graphs ---
+if degree_skew <= 1.562:
+    if mean_degree <= 3.977:
+        -> OpenMP x8 (predicted 2.84x, 3 graphs)
+    else:
+        -> OpenMP x16 (predicted 5.09x, 5 graphs)
+else:
+    if out_cv <= 0.3558:
+        if mean_degree <= 8:
+            -> OpenMP x16 (predicted 9.94x, 7 graphs)
+        else:
+            -> CUDA (predicted 31.05x, 4 graphs)
+    else:
+        if n <= 3463:
+            -> OpenMP x8 (predicted 4.96x, 3 graphs)
+        else:
+            -> OpenMP x16 (predicted 8.68x, 12 graphs)
+
+--- tc [cpu]: tree fit on 34 graphs ---
+if degree_skew <= 1.437:
+    if mean_degree <= 3.977:
+        -> OpenMP x8 (predicted 2.84x, 3 graphs)
+    else:
+        -> OpenMP x16 (predicted 4.48x, 4 graphs)
+else:
+    if n <= 3463:
+        -> OpenMP x8 (predicted 4.96x, 3 graphs)
+    else:
+        if n <= 1.622e+04:
+            -> OpenMP x16 (predicted 7.82x, 7 graphs)
+        else:
+            -> OpenMP x16 (predicted 10.48x, 17 graphs)
+
+wrote results/models/sweep_5090_tree.json

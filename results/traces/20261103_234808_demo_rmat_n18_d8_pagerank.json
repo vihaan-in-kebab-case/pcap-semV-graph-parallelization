@@ -1,0 +1,123 @@
+{
+  "time": "2026-11-03T23:47:59",
+  "algo": "pagerank",
+  "graph": {
+    "path": "datasets/demo_graphs/demo_rmat_n18_d8.txt",
+    "format": "edge-list",
+    "directed": true,
+    "directed_source": "file header",
+    "converted_path": null
+  },
+  "machine": {
+    "os": "Darwin 24.3.0",
+    "arch": "arm64",
+    "cpu": "Apple M2",
+    "cores": 8,
+    "logical": 8,
+    "gpu": null,
+    "bins": {
+      "gps_bench": true,
+      "gps_bench_mpi": true,
+      "gps_bench_cuda": false
+    },
+    "mpi": true,
+    "gpu_usable": false
+  },
+  "features": {
+    "n": 148740,
+    "m": 2017050,
+    "mean_degree": 13.5609117,
+    "degree_skew": 706.220956,
+    "out_cv": 5.54892603,
+    "dangling_frac": 0.176085787,
+    "symmetric": 0,
+    "load_s": 0.710104541,
+    "extract_s": 0.000205333
+  },
+  "candidates": [
+    [
+      "seq",
+      1
+    ],
+    [
+      "omp",
+      2
+    ],
+    [
+      "omp",
+      4
+    ],
+    [
+      "omp",
+      8
+    ],
+    [
+      "mpi",
+      2
+    ],
+    [
+      "mpi",
+      4
+    ],
+    [
+      "mpi",
+      8
+    ]
+  ],
+  "excluded": [
+    "CUDA: no usable GPU or gps_bench_cuda not built"
+  ],
+  "decision": {
+    "policy": "tree",
+    "chosen": [
+      "omp",
+      8
+    ],
+    "reason": "highest predicted speedup 6.07x among 4 options",
+    "neighbors": null,
+    "predicted_log_speedup": {
+      "omp@2": 0.6244524206847968,
+      "omp@4": 1.2645020629706396,
+      "omp@8": 1.8039245262957424,
+      "seq@1": 0.0
+    },
+    "train": null
+  },
+  "run": {
+    "ok": true,
+    "correct": true,
+    "decision_cost_s": 0.011618083000000017,
+    "process_wall_s": 0.8878843749989755,
+    "driver_summary": [
+      "[pagerank] n=148740 m=2017050 preprocess=0.00699213s median_compute=0.0116181s correct=yes",
+      "      iters=12 residual=8.79506e-09 top_vertex=1942 top_rank=0.0041494"
+    ],
+    "load_s": 0.77873375,
+    "preprocess_s": 0.006992125,
+    "setup_s": null,
+    "alloc_s": null,
+    "h2d_s": null,
+    "d2h_s": null,
+    "compute_s": 0.011618083,
+    "comm_s": null,
+    "e2e_s": 0.797343958
+  },
+  "timing": {
+    "ingest_s": 0.000522000016644597,
+    "feature_wall_s": 0.742952582979342,
+    "decide_s": 0.0006602090143132955,
+    "selection_overhead_s": 0.0008655420143132955,
+    "one_shot_total_s": 0.7987315000309579,
+    "demo_wall_s": 1.6869575000018813
+  },
+  "verify": {
+    "OpenMP x4": 0.009259958000000049,
+    "OpenMP x8": 0.011618083000000017,
+    "OpenMP x2": 0.015248916999999997,
+    "MPI x2": 0.022160000000000075,
+    "sequential": 0.029483500000000065,
+    "MPI x4": 0.04784800000000002,
+    "MPI x8": 0.06276600800000005
+  },
+  "verify_regret": 0.2546582824673671
+}

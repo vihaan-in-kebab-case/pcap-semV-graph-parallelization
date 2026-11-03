@@ -22,6 +22,25 @@ def fvec(f):
             math.log10(1 + float(f["degree_skew"])), float(f["out_cv"]),
             float(f["dangling_frac"]), 1.0 if float(f["symmetric"]) >= 0.5 else 0.0]
 
+RANGE_FEATURES = [(0, "n", lambda x: 10 ** x), (1, "mean_degree", lambda x: 10 ** x - 1),
+                  (2, "degree_skew", lambda x: 10 ** x - 1), (3, "out_cv", lambda x: x)]
+
+
+def feature_range(vecs):
+    cols = list(zip(*vecs))
+    return {"min": [min(c) for c in cols], "max": [max(c) for c in cols]}
+
+
+def range_warnings(vec, rng):
+    out = []
+    for j, name, raw in RANGE_FEATURES:
+        lo, hi = rng["min"][j], rng["max"][j]
+        if vec[j] > hi + 1e-9:
+            out.append(f"{name} = {raw(vec[j]):.4g} is above the training maximum {raw(hi):.4g}")
+        elif vec[j] < lo - 1e-9:
+            out.append(f"{name} = {raw(vec[j]):.4g} is below the training minimum {raw(lo):.4g}")
+    return out
+
 def load_train(path):
     train = {}
     with open(path) as fh:

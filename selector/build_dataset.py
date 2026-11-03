@@ -32,6 +32,8 @@ def main():
     ap.add_argument("--features", default="results/features")
     ap.add_argument("--manifest", default="datasets/manifest.csv")
     ap.add_argument("--out", default="results/processed")
+    ap.add_argument("--drop-impl", action="append", default=[],
+                    help="ignore rows of this implementation (e.g. mpi when its sweep is incomplete)")
     args = ap.parse_args()
 
     with open(args.manifest) as f:
@@ -52,6 +54,8 @@ def main():
     for p in files:
         with open(p) as f:
             for r in csv.DictReader(f):
+                if r["impl"] in args.drop_impl:
+                    continue
                 m = by_file.get(r["dataset"])
                 if m is None:
                     continue

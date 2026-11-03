@@ -47,6 +47,7 @@ def main():
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w") as f:
         json.dump({"dataset": args.dataset, "features": policies.FEATURE_NAMES, "has_cuda": has_cuda,
+                   "feature_range": policies.feature_range([e["vec"] for e in train.values()]),
                    "models": models}, f)
     print(f"\nwrote {out}")
 

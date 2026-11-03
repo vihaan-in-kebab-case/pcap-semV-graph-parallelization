@@ -97,6 +97,9 @@ def main():
     infer = time.perf_counter() - t0
     print(f"[decision] policy={info['policy_used']}  ->  {policies.cfg_label(choice)}   ({reason})")
     for line in info["explain"]:
+        rng = policies.feature_range([e["vec"] for (g2, al), e in train.items() if g2 not in exclude and al == a.algo])
+        for w_ in policies.range_warnings(v, rng):
+            print(f"           WARNING: {w_}; the prediction is an extrapolation")
         print("           " + line)
     if scores:
         print("           predicted speedup: " + ", ".join(

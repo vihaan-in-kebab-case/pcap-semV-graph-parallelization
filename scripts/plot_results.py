@@ -237,9 +237,11 @@ def main():
     ap.add_argument("csv", nargs="+")
     ap.add_argument("--out", default="results/figures")
     ap.add_argument("--processed", default="results/processed")
+    ap.add_argument("--drop-impl", action="append", default=[])
     args = ap.parse_args()
 
     df = load(args.csv)
+    df = df[~df.impl.isin(args.drop_impl)]
     bad = df[df.correct == 0]
     if len(bad):
         print("WARNING: incorrect runs present:\n", bad[["algorithm", "impl", "dataset", "workers", "note"]].to_string(index=False))

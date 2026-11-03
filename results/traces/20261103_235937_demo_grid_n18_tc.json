@@ -1,0 +1,116 @@
+{
+  "time": "2026-11-03T23:59:36",
+  "algo": "tc",
+  "graph": {
+    "path": "datasets/demo_graphs/demo_grid_n18.txt",
+    "format": "edge-list",
+    "directed": false,
+    "directed_source": "file header",
+    "converted_path": null
+  },
+  "machine": {
+    "os": "Darwin 24.3.0",
+    "arch": "arm64",
+    "cpu": "Apple M2",
+    "cores": 8,
+    "logical": 8,
+    "gpu": null,
+    "bins": {
+      "gps_bench": true,
+      "gps_bench_mpi": true,
+      "gps_bench_cuda": false
+    },
+    "mpi": true,
+    "gpu_usable": false
+  },
+  "features": {
+    "n": 262144,
+    "m": 1046528,
+    "mean_degree": 3.9921875,
+    "degree_skew": 1.00195695,
+    "out_cv": 0.0220970446,
+    "dangling_frac": 0,
+    "symmetric": 1,
+    "load_s": 0.212975666,
+    "extract_s": 0.000254417
+  },
+  "candidates": [
+    [
+      "seq",
+      1
+    ],
+    [
+      "omp",
+      2
+    ],
+    [
+      "omp",
+      4
+    ],
+    [
+      "omp",
+      8
+    ],
+    [
+      "mpi",
+      2
+    ],
+    [
+      "mpi",
+      4
+    ],
+    [
+      "mpi",
+      8
+    ]
+  ],
+  "excluded": [
+    "CUDA: no usable GPU or gps_bench_cuda not built"
+  ],
+  "decision": {
+    "policy": "tree",
+    "chosen": [
+      "omp",
+      4
+    ],
+    "reason": "highest predicted speedup 3.21x among 7 options",
+    "neighbors": null,
+    "predicted_log_speedup": {
+      "mpi@2": -0.9215173678007649,
+      "mpi@4": -1.1503108115827767,
+      "mpi@8": -2.4147238835035156,
+      "omp@2": 0.6241722186286478,
+      "omp@4": 1.1671077191807127,
+      "omp@8": 1.099567052679265,
+      "seq@1": 0.0
+    },
+    "train": null
+  },
+  "run": {
+    "ok": true,
+    "correct": true,
+    "decision_cost_s": 0.0005415000000000012,
+    "process_wall_s": 0.15701220798655413,
+    "driver_summary": [
+      "[tc] n=262144 m=1046528 preprocess=0.00268108s median_compute=0.0005415s correct=yes",
+      "      triangles=0"
+    ],
+    "load_s": 0.140021416,
+    "preprocess_s": 0.002681083,
+    "setup_s": null,
+    "alloc_s": null,
+    "h2d_s": null,
+    "d2h_s": null,
+    "compute_s": 0.0005415,
+    "comm_s": null,
+    "e2e_s": 0.143243999
+  },
+  "timing": {
+    "ingest_s": 0.00024850000045262277,
+    "feature_wall_s": 0.2183742499910295,
+    "decide_s": 0.0004272080259397626,
+    "selection_overhead_s": 0.0006816250259397626,
+    "one_shot_total_s": 0.1441741240263924,
+    "demo_wall_s": 0.38524133400642313
+  }
+}

@@ -1,0 +1,28 @@
+5090_nogpu [dropped: mpi, cuda]
+
+Fastest option count by algorithm (decision cost, selector-offered options):
+impl      omp  seq
+algo              
+bfs        23   11
+pagerank   32    2
+cc         29    5
+sssp       28    6
+tc         34    0
+
+Geometric-mean compute speedup over sequential (best config per framework):
+impl       omp
+algo          
+bfs       1.51
+pagerank  4.00
+cc        2.41
+sssp      2.16
+tc        7.77
+
+Share of graphs where the framework beat sequential (compute time):
+impl       omp
+algo          
+bfs       0.68
+pagerank  0.94
+cc        0.85
+sssp      0.82
+tc        1.00

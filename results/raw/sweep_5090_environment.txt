@@ -1,0 +1,13 @@
+date_utc: 2026-11-03T13:54:25Z
+git_commit: c762f8afeef0fd0e81a151b9dde6a027645621de
+git_uncommitted_files: 5
+uname: Linux AmanLegion5Pro 6.18.54.1-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Tue Oct  6 19:13:07 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+cpu: AMD Ryzen 7 8745HX with Radeon Graphics
+cores_logical: 16
+memory_kb: 16013216
+cmake: cmake version 3.28.3
+cxx: c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+mpi: mpirun (Open MPI) 4.1.6
+nvcc: Build cuda_12.8.r12.8/compiler.35583870_0
+gpu: NVIDIA GeForce RTX 5060 Laptop GPU, 621.01, 8151 MiB
+omp_env: OMP_PROC_BIND=unset OMP_PLACES=unset

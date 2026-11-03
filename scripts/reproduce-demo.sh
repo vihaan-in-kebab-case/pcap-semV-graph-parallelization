@@ -14,7 +14,7 @@ bad="$(awk -F, 'FNR>1 && $19==0' results/raw/${TAG}_*.csv | wc -l | tr -d ' ')"
 echo "incorrect rows: ${bad} (must be 0)"
 
 echo "== rebuild datasets from the raw sweep =="
-python selector/build_dataset.py --tag "$TAG"
+python selector/build_dataset.py --tag "$TAG" ${DROP_IMPL:+--drop-impl "$DROP_IMPL"}
 if [ -f "results/features/${TAG}_demo_features.jsonl" ] && [ -f datasets/manifest_demo.csv ]; then
   python selector/build_dataset.py --tag "${TAG}_demo" --manifest datasets/manifest_demo.csv
 fi

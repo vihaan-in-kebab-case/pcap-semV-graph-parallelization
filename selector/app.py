@@ -73,7 +73,8 @@ function render(t,log){
   let h='<div class="card"><h2>Decision</h2><p class="big">'+esc(label(d.chosen))+'</p><p>'+esc(d.reason)+
     '<br><span class="mute">policy: '+esc(d.policy)+' | '+esc(g.format)+', '+(g.directed?'directed':'undirected')+
     ' ('+esc(g.directed_source)+') | machine: '+esc(m.cpu)+', '+m.cores+' cores'+(m.gpu?', '+esc(m.gpu.name):', no GPU detected')+'</span>'+
-    (t.excluded&&t.excluded.length?'<br><span class="mute">Not available here (excluded from the choice): '+esc(t.excluded.join('; '))+'</span>':'')+'</p></div>';
+    (t.excluded&&t.excluded.length?'<br><span class="mute">Not available here (excluded from the choice): '+esc(t.excluded.join('; '))+'</span>':'')+
+    (t.warnings&&t.warnings.length?'<br><span>Warning: '+esc(t.warnings.join('; '))+'; the prediction is an extrapolation</span>':'')+'</p></div>';
   h+='<div class="card"><h2>Metrics (median of trials)</h2><table>'+rows([
     ['Correct',run.correct?'yes':'NO'],
     ['Raw compute runtime',fmt(run.compute_s)+(run.comm_s?' (MPI communication '+fmt(run.comm_s)+')':'')],

@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Leave-one-graph-out (LOGO) and leave-one-family-out (LOFO) evaluation of the selection policies.
 
-usage: evaluate.py --dataset results/processed/sweep_mac_dataset.csv [--k 3] [--min-gain 1.05] [--show-tree]
+usage: evaluate.py --dataset results/processed/sweep_mac_dataset.csv [--k 3] [--min-gain 1.05]
+                   [--show-tree] [--no-overhead] [--no-gpu]
 Policy cost = decision cost of the chosen config (+ feature extraction + inference for rule/knn/tree).
+--no-gpu evaluates a machine without a GPU: CUDA is removed from the options, the oracle and the training data.
 """
 import argparse
 import csv
@@ -15,11 +17,22 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import policies  # noqa: E402
 
+if not hasattr(policies, "restrict_pool"):
+    sys.exit("selector/policies.py is missing the GPU-guardrail edits (restrict_pool); apply them first")
+
 ORDER = ["seq", "fixed", "rule", "knn", "tree", "oracle"]
 LABEL = {"seq": "always sequential", "fixed": "best single config", "rule": "size-threshold rule",
          "knn": "kNN", "tree": "decision tree", "oracle": "oracle"}
 ALGOS = ["bfs", "pagerank", "cc", "sssp", "tc"]
-FLOOR = 1e-4
+FLOOR = 1e-4   # seconds: differences below 0.1 ms are timer noise and treated as ties
+
+
+def offered(c, no_gpu):
+    if c == policies.SEQ:
+        return True
+    if c[0] == "cuda":
+        return not no_gpu
+    return c[1] > 1
 
 
 def run_split(train, split, args):
@@ -29,7 +42,7 @@ def run_split(train, split, args):
         if policies.SEQ not in inst["D"]:
             continue
         exclude = {g} if split == "graph" else {h for h, f in family.items() if f == family[g]}
-        cands = [c for c in inst["scores"] if c == policies.SEQ or c[0] == "cuda" or c[1] > 1]
+        cands = [c for c in inst["scores"] if offered(c, args.no_gpu)]
         best = max(cands, key=inst["scores"].get)
         d_seq, d_best = inst["D"][policies.SEQ], inst["D"][best]
         for name in ORDER:
@@ -38,7 +51,7 @@ def run_split(train, split, args):
                 choice = best
             else:
                 kw = dict(k=args.k, min_gain=args.min_gain)
-                policies.decide(name, train, algo, inst["vec"], cands, exclude, **kw)   # fit + cache (offline)
+                policies.decide(name, train, algo, inst["vec"], cands, exclude, **kw)   # fit and cache (offline)
                 t0 = time.perf_counter()
                 choice, _, _, _ = policies.decide(name, train, algo, inst["vec"], cands, exclude, **kw)
                 infer = time.perf_counter() - t0
@@ -82,12 +95,13 @@ def print_table(title, summ):
               f"{s['regression_rate_pct']:>11.1f}%{s['top1_pct']:>7.1f}%{s['overhead_pct']:>9.2f}%")
 
 
-def figures(by_split, out_dir):
+def figures(by_split, out_dir, scenario=""):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     import numpy as np
     os.makedirs(out_dir, exist_ok=True)
+    subtitle = scenario.strip() or "all measured options"
 
     fig, ax = plt.subplots(figsize=(9, 4.2))
     w = 0.38
@@ -98,6 +112,7 @@ def figures(by_split, out_dir):
     ax.set_xticks(range(len(ORDER)))
     ax.set_xticklabels([LABEL[n] for n in ORDER], rotation=20, ha="right")
     ax.set_ylabel("geometric-mean speedup vs sequential\n(selection overhead included)")
+    ax.set_title(subtitle)
     ax.legend()
     ax.grid(axis="y", alpha=0.3)
     fig.savefig(os.path.join(out_dir, "1_speedup_by_policy.png"), dpi=150, bbox_inches="tight")
@@ -105,12 +120,14 @@ def figures(by_split, out_dir):
 
     names = ORDER[:-1]
     fig, ax = plt.subplots(figsize=(9, 4.2))
-    data = [[r["t_policy"] / r["t_oracle"] for r in by_split["graph"] if r["policy"] == n] for n in names]
+    data = [[max(r["t_policy"], FLOOR) / max(r["t_oracle"], FLOOR)
+             for r in by_split["graph"] if r["policy"] == n] for n in names]
     ax.boxplot(data)
     ax.set_xticklabels([LABEL[n] for n in names], rotation=20, ha="right")
     ax.set_yscale("log")
     ax.axhline(1.0, color="gray", lw=0.8)
     ax.set_ylabel("time vs oracle (1.0 = perfect), leave-one-graph-out")
+    ax.set_title(subtitle)
     ax.grid(axis="y", alpha=0.3)
     fig.savefig(os.path.join(out_dir, "2_slowdown_vs_oracle.png"), dpi=150, bbox_inches="tight")
     plt.close(fig)
@@ -121,7 +138,8 @@ def figures(by_split, out_dir):
     for i, p in enumerate(pol):
         vals = []
         for a in ALGOS:
-            xs = [r["t_policy"] / r["t_oracle"] for r in by_split["graph"] if r["policy"] == p and r["algo"] == a]
+            xs = [max(r["t_policy"], FLOOR) / max(r["t_oracle"], FLOOR)
+                  for r in by_split["graph"] if r["policy"] == p and r["algo"] == a]
             vals.append(math.exp(statistics.fmean(math.log(x) for x in xs)) if xs else float("nan"))
         ax.bar(np.arange(len(ALGOS)) + (i - 2) * w, vals, w, label=LABEL[p])
     ax.axhline(1.0, color="gray", lw=0.8)
@@ -129,6 +147,7 @@ def figures(by_split, out_dir):
     ax.set_xticklabels(ALGOS)
     ax.set_yscale("log")
     ax.set_ylabel("geometric-mean time vs oracle (lower is better)")
+    ax.set_title(subtitle)
     ax.legend(fontsize=8)
     ax.grid(axis="y", alpha=0.3)
     fig.savefig(os.path.join(out_dir, "3_slowdown_by_algorithm.png"), dpi=150, bbox_inches="tight")
@@ -136,13 +155,15 @@ def figures(by_split, out_dir):
     print(f"wrote figures to {out_dir}")
 
 
-def show_trees(train):
+def show_trees(train, no_gpu):
     for algo in ALGOS:
         pool = [(g, e) for (g, a), e in train.items() if a == algo]
         if len(pool) < 5:
             continue
-        model, cfgs = policies.fit_tree(pool)
-        print(f"\n--- decision tree for {algo} (fit on all {len(pool)} graphs) ---")
+        allowed = {c for _, e in pool for c in e["scores"] if offered(c, no_gpu)}
+        model, cfgs = policies.fit_tree(policies.restrict_pool(pool, allowed))
+        print(f"\n--- decision tree for {algo} (fit on all {len(pool)} graphs"
+              f"{', CUDA excluded' if no_gpu else ''}) ---")
         print(policies.tree_to_text(model, cfgs))
 
 
@@ -155,28 +176,34 @@ def main():
     ap.add_argument("--figs", default="results/figures")
     ap.add_argument("--show-tree", action="store_true")
     ap.add_argument("--no-overhead", action="store_true")
+    ap.add_argument("--no-gpu", action="store_true",
+                    help="evaluate a machine without a GPU: CUDA removed from options and oracle")
     args = ap.parse_args()
 
     train = policies.load_train(args.dataset)
     tag = os.path.basename(args.dataset).replace("_dataset.csv", "")
+    has_cuda = any(c[0] == "cuda" for inst in train.values() for c in inst["scores"])
+    scenario = (" [GPU absent: CUDA excluded from options and oracle]" if args.no_gpu else
+                " [GPU present: CUDA included]" if has_cuda else " [no CUDA measurements in this dataset]")
     by_split = {s: run_split(train, s, args) for s in ("graph", "family")}
     for s, title in (("graph", "Leave-one-graph-out"), ("family", "Leave-one-family-out")):
         n_inst = len({(r["graph"], r["algo"]) for r in by_split[s]})
-        print_table(f"{title} ({n_inst} instances)", summarize(by_split[s]))
+        print_table(f"{title} ({n_inst} instances){scenario}", summarize(by_split[s]))
     print("\nregret = time / oracle time - 1; regression = slower than sequential; "
           "top-1 = within 5% of the best option; overhead = selection time / total.")
 
+    suffix = "_nogpu" if args.no_gpu else ""
     os.makedirs(args.out, exist_ok=True)
     allrows = by_split["graph"] + by_split["family"]
-    path = os.path.join(args.out, f"{tag}_selector_eval.csv")
+    path = os.path.join(args.out, f"{tag}{suffix}_selector_eval.csv")
     with open(path, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(allrows[0].keys()))
         w.writeheader()
         w.writerows(allrows)
     print(f"wrote {path}")
-    figures(by_split, os.path.join(args.figs, f"selector_{tag}"))
+    figures(by_split, os.path.join(args.figs, f"selector_{tag}{suffix}"), scenario)
     if args.show_tree:
-        show_trees(train)
+        show_trees(train, args.no_gpu)
 
 
 if __name__ == "__main__":

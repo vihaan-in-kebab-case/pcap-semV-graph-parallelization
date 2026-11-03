@@ -313,6 +313,15 @@ def main():
     elif train_path:
         say(f"              training data: {train_path}" + ("" if a.keep_self else "  (query graph held out)"))
     for line in dinfo["explain"]:
+        if model is not None:
+            rng = model.get("feature_range")
+        elif train:
+            rng = policies.feature_range([e["vec"] for (g2, al), e in train.items() if g2 not in exclude and al == a.algo])
+        else:
+            rng = None
+        warns = policies.range_warnings(policies.fvec(f), rng) if rng else []
+        for w_ in warns:
+            say(f"              WARNING: {w_}; the prediction is an extrapolation")
         say("              " + line)
     if dinfo.get("gpu_absent"):
         say("              GPU absent: CUDA excluded; the policy was trained and evaluated on CPU options only")
