@@ -20,9 +20,24 @@
 Sequential, OpenMP, MPI and CUDA Baselines\\
 and a Lightweight Execution Selector}
 
-\author{\IEEEauthorblockN{\fillin{Author 1}, \fillin{Author 2}, \fillin{Author 3}}
-\IEEEauthorblockA{\fillin{Department, University}\\
-Course project report, November 2026}}
+\author{%
+\IEEEauthorblockN{Vihaan Kharia\\240905442}
+\IEEEauthorblockA{\small School of Computer Science\\and Engineering\\
+Manipal Institute of Technology\\
+Manipal Academy of Higher Education\\
+Manipal, Karnataka, India}
+\and
+\IEEEauthorblockN{Manas Bijalwan\\240905402}
+\IEEEauthorblockA{\small School of Computer Science\\and Engineering\\
+Manipal Institute of Technology\\
+Manipal Academy of Higher Education\\
+Manipal, Karnataka, India}
+\and
+\IEEEauthorblockN{Saksham Gupta\\240905456}
+\IEEEauthorblockA{\small School of Computer Science\\and Engineering\\
+Manipal Institute of Technology\\
+Manipal Academy of Higher Education\\
+Manipal, Karnataka, India}}
 
 \maketitle
 
@@ -233,12 +248,12 @@ The families differ in vertex ordering as well as in structure: uniform and R-MA
 \toprule
  & Mac (development) & Windows laptop (WSL2) \\
 \midrule
-CPU & \fillin{Apple chip}, 8 physical cores & \fillin{CPU model}, 16 logical processors visible \\
-Memory & \fillin{RAM} & \fillin{RAM}; about 14\,GB visible to WSL2 \\
+CPU & Apple Silicon M2, 8 physical cores & Ryzen 7, 16 logical processors visible \\
+Memory & 8 GB & 16 GB; about 14\,GB visible to WSL2 \\
 Accelerator & none & NVIDIA RTX 5090 (laptop) \\
-OS & macOS \fillin{version} & Ubuntu \fillin{version} on WSL2 \\
-Software & AppleClang 17, libomp (OpenMP 5.1) & \fillin{GCC version}, CUDA \fillin{12.8 or newer} \\
-MPI & Open MPI \fillin{version} & Open MPI \fillin{version} \\
+OS & macOS 15.3.1 & Ubuntu 24.04 LTS on WSL2 \\
+Software & AppleClang 17, libomp (OpenMP 5.1) & GCC 15.1.0, CUDA 12.8, libomp (OpenMP 5.1) \\
+MPI & Open MPI 5.0.11 & Open MPI 5.0.11 \\
 Workers swept & 1, 2, 4, 8 threads or ranks & 1, 2, 4, 8, 16 threads \\
 \bottomrule
 \end{tabular}
@@ -333,7 +348,7 @@ Mac, CPU only & graph & 4.06 & 1.20 (5.3) & 1.09 (12.9) & \textbf{1.05} (7.1) \\
 Parallel execution loses on small graphs because its fixed costs (thread start-up, synchronisation, message exchange, kernel launches and transfers) are not amortised. For connected components, PageRank and triangle counting the break-even lies at a few thousand vertices (the learned PageRank rule on the laptop switches at about 1.7 thousand). BFS and SSSP keep sequential execution competitive on a sizeable minority of graphs. A level-synchronous traversal pays a synchronisation on every level, so graphs with many levels and small frontiers, such as the grids, are a plausible cause, but we did not isolate this. On the largest graphs scaling is good up to the physical core count and then flattens: triangle counting on the R-MAT graph reaches 3.6$\times$ with 4 OpenMP threads (90\% efficiency), 6.7$\times$ with 8 (84\%) and 9.3$\times$ with 16 (58\%); the last step uses hyperthreads on the laptop.
 
 \subsection{Where the time goes}
-Loading and preprocessing are the same for every option, so they set a floor under end-to-end time and dilute differences between frameworks. On the Mac, parsing and building the CSR for web-Google took about 1.6\,s and symmetrising it about 0.7\,s, while a BFS needs a few tens of milliseconds; the PageRank transpose took about 0.03\,s, roughly 3\% of the sequential PageRank run. Kernel time for the GPU excludes allocation and transfers, which is why Fig.~\ref{fig:speedup} shows both views: a GPU that is fast by kernel time can still lose in a one-shot run. MPI's setup includes distributing the graph through message passing. \fillin{check this subsection against Fig.~\ref{fig:split} once generated}
+Loading and preprocessing are the same for every option, so they set a floor under end-to-end time and dilute differences between frameworks. On the Mac, parsing and building the CSR for web-Google took about 1.6\,s and symmetrising it about 0.7\,s, while a BFS needs a few tens of milliseconds; the PageRank transpose took about 0.03\,s, roughly 3\% of the sequential PageRank run. Kernel time for the GPU excludes allocation and transfers, which is why Fig.~\ref{fig:speedup} shows both views: a GPU that is fast by kernel time can still lose in a one-shot run.
 
 \begin{figure*}[!t]
 \centering
