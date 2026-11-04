@@ -9,6 +9,7 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{url}
+\usepackage{stfloats}
 \newcommand{\fillin}[1]{\textcolor{red}{[#1]}}
 \newcommand{\safefig}[2]{\IfFileExists{#1}{\includegraphics[width=#2]{#1}}{\fbox{\parbox{#2}{\centering\footnotesize figure missing}}}}
 \newcommand{\safetable}[1]{\IfFileExists{#1}{\input{#1}}{\fillin{missing table; run make\_report\_tables.py}}}
@@ -104,11 +105,11 @@ The selector can report when a graph's features lie outside the training range. 
 
 %==============================================================
 \section{System Architecture}
-Figure~\ref{fig:pipeline} shows the pipeline. The code is organised in layers. A shared core holds the CSR structure, the loader, feature extraction, validators and the timing and record code. Four implementation libraries (sequential, OpenMP, MPI, CUDA) implement the five kernels against that core, and three driver programs run them: one for sequential and OpenMP, one launched under \texttt{mpirun}, and one for CUDA. Each driver appends one CSV row per trial. Benchmark scripts sweep thread and rank counts over a registry of graphs (a manifest with family and directedness) and record the environment. Analysis scripts turn raw rows into tables and figures. The selector layer reads the sweep to build the training table, trains and evaluates policies, and serves decisions through a command-line tool, a web page and a replay mode. Unit tests with independent oracles guard every implementation. Raw results are append-only and tagged, graphs are generated from seeds listed in the manifest, and each run stores the environment (commit, CPU, compiler, driver).
+Figure~\ref{fig:pipeline} shows the pipeline. The code is organised in layers. A shared core holds the CSR structure, the loader, feature extraction, validators and the timing and record code. Four implementation libraries (sequential, OpenMP, MPI, CUDA) implement the five kernels against that core, and three driver programs run them: one for sequential and OpenMP, one launched under \texttt{mpirun}, and one for CUDA. Each driver appends one CSV row per trial. Benchmark scripts sweep thread and rank counts over a registry of graphs (a manifest with family and directedness) and record the environment. Analysis scripts turn raw rows into tables and figures. The selector layer reads the sweep to build the training table, trains and evaluates policies, and serves decisions through a command-line tool, a web page and a replay mode.
 
 \textit{Tooling.} The command-line tool takes a graph and a kernel, detects format and directedness, converts the graph to CSR, profiles the machine, extracts features, chooses an option, runs it and prints a trace with raw compute time, end-to-end time and selection overhead. A small web page wraps the same tool (file upload and a kernel dropdown). Because the GPU laptop was available only for the sweep, a replay mode runs the selector on recorded measurements; every time it prints is a recorded measurement and the output is labelled as a replay.
 
-\begin{figure*}[t]
+\begin{figure*}[!t]
 \centering
 \begin{tikzpicture}[
   node distance=6mm,
@@ -143,7 +144,7 @@ Figure~\ref{fig:pipeline} shows the pipeline. The code is organised in layers. A
 \subsection{Graph kernels}
 Table~\ref{tab:alg} lists the formulations. Two rules guided the design. First, the algorithm is the same in every execution model, so that only the execution model changes; the single exception is connected components under MPI, where union-find does not distribute naturally and we use label propagation instead. Second, the parallel versions are deliberately vanilla (no tuning), because the baselines must stay a stable reference. OpenMP uses dynamic scheduling for loops over edges. The CUDA kernels assign one thread to each vertex or frontier vertex and use atomics. MPI splits the vertices into equal contiguous blocks and each rank owns the out-edges of its block; this partition is naive on purpose, so any imbalance on skewed graphs shows up in the results.
 
-\begin{table}[t]
+\begin{table}[!tb]
 \caption{Kernel formulations. All models except MPI connected components use the same method.}
 \label{tab:alg}
 \centering\footnotesize
@@ -166,7 +167,7 @@ Graphs are stored in compressed sparse row (CSR) form with 32-bit vertex ids and
 \subsection{Selector algorithms}
 Algorithm~\ref{alg:train} is run once per machine on the sweep data. Algorithm~\ref{alg:select} is run for every query.
 
-\begin{algorithm}[t]
+\begin{algorithm}[!tb]
 \caption{Offline training (once per machine)}\label{alg:train}
 \begin{algorithmic}[1]
 \Require decision costs $D_c(G,k)$ for all graphs $G$, kernels $k$ and measured options $c$; features $f(G)$
@@ -182,7 +183,7 @@ Algorithm~\ref{alg:train} is run once per machine on the sweep data. Algorithm~\
 \end{algorithmic}
 \end{algorithm}
 
-\begin{algorithm}[t]
+\begin{algorithm}[!tb]
 \caption{Selection and execution of one query}\label{alg:select}
 \begin{algorithmic}[1]
 \Require graph file, kernel $k$
@@ -197,14 +198,37 @@ Algorithm~\ref{alg:train} is run once per machine on the sweep data. Algorithm~\
 
 %==============================================================
 \section{Experimental Setup}
-\subsection{Graphs}
-We use 34 graphs. Two are real SNAP graphs~\cite{snap}: ego-Facebook (4,039 vertices, 88,234 edges)~\cite{mcauley} and web-Google (875,713 vertices, 5,105,039 edges)~\cite{leskovec}. Our triangle count on web-Google, 13,391,903, matches the value published by SNAP. The other 32 are synthetic with fixed seeds: uniform random directed graphs, R-MAT graphs~\cite{rmat} (heavy-tailed degrees), small-world graphs~\cite{ws} and two-dimensional grids (long paths, equal degrees). Requested sizes run from $2^{10}$ to $2^{20}$ vertices, with mean degree 8 and, for some sizes, 2 or 32. Actual sizes are smaller than requested, because vertices without edges are dropped and duplicate edges removed; for example the R-MAT graph requested at $2^{20}$ vertices has 547,094. Degree skew (maximum over mean degree) ranges from 1.0 for grids to 1,544 for the largest R-MAT graph.
+\subsection{Graphs and graph families}
+We use 34 graphs. Two are real SNAP graphs~\cite{snap}: ego-Facebook (4,039 vertices, 88,234 edges)~\cite{mcauley} and web-Google (875,713 vertices, 5,105,039 edges)~\cite{leskovec}. Our triangle count on web-Google, 13,391,903, matches the value published by SNAP. The other 32 are synthetic, generated from fixed seeds in four families (Table~\ref{tab:families}). Requested sizes run from $2^{10}$ to $2^{20}$ vertices. Actual sizes are smaller than requested, because vertices without edges are dropped and duplicate edges removed; for example the R-MAT graph requested at $2^{20}$ vertices has 547,094.
+
+The families vary the properties that most affect parallel performance: how even the degrees are, how long the shortest paths are, and how much triangle work exists. \textit{Uniform} graphs have $n\cdot d$ edges with uniformly random endpoints, where $d$ is the target mean degree: degrees are close to Poisson, paths are short and every vertex has about the same work. This is the balanced case. \textit{R-MAT} graphs~\cite{rmat} are built by recursively choosing one quadrant of the adjacency matrix with probabilities 0.57, 0.19, 0.19 and 0.05, after which vertex ids are shuffled; they have a heavy-tailed degree distribution with a few very large hubs, like many social and web graphs, and are the load-imbalance stress test. \textit{Small-world} graphs~\cite{ws} are rings in which each vertex links to $d/2$ neighbours on each side and 10\% of the edges are rewired at random: degrees stay almost equal, the shortcuts keep paths short, and the local neighbourhoods keep triangle counts high. \textit{Grids} are square two-dimensional lattices (from $32\times32$ to $1024\times1024$) with four neighbours per vertex. Degrees are equal and the longest path grows with the side length, about 2,000 steps at the largest size, so BFS and SSSP run thousands of rounds on tiny frontiers. A four-neighbour grid contains no triangles, so triangle counting does almost no useful work on it.
+
+Uniform and R-MAT graphs come at mean degree 8 for all six sizes and at mean degree 2 and 32 for the $2^{14}$ and $2^{16}$ sizes; small-world graphs use mean degree 8. The real graphs have degree skew 23.9 (Facebook) and 78.2 (web-Google) and out-degree variation of 1.20 and 1.13, near the low end of the R-MAT range.
+
+\begin{table}[!tb]
+\caption{Synthetic graph families. Skew is maximum over mean degree; Out CV is the coefficient of variation of the out-degree. Ranges are observed values after loading.}
+\label{tab:families}
+\centering\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrlrrll@{}}
+\toprule
+Family & Graphs & Dir. & Skew & Out CV & Paths & Triangles \\
+\midrule
+Uniform & 10 & dir. & 1.7--4.9 & 0.18--0.69 & short & few \\
+R-MAT & 10 & dir. & 26--1544 & 2.0--6.9 & short & many \\
+Small-world & 6 & undir. & 1.4--1.8 & 0.11 & short & many \\
+Grid & 6 & undir. & 1.0 & 0.02--0.09 & very long & none \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The families differ in vertex ordering as well as in structure: uniform and R-MAT graphs have effectively random vertex orders, whereas small-world and grid graphs keep their natural, very cache-friendly orders. Some performance differences between families may therefore come from memory locality and not only from structure; we did not separate the two. Each real graph forms a family of one, so holding it out in the family-level evaluation is the same as holding out one graph.
 
 \subsection{Platforms}
-\begin{table}[t]
+\begin{table}[!tb]
 \caption{Experimental platforms.}
 \label{tab:platforms}
-\centering\footnotesize
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}p{0.2\columnwidth}p{0.36\columnwidth}p{0.36\columnwidth}@{}}
 \toprule
  & Mac (development) & Windows laptop (WSL2) \\
@@ -235,7 +259,7 @@ We evaluate with leave-one-graph-out and leave-one-family-out splits (families: 
 \subsection{Raw runtimes}
 Table~\ref{tab:raw} gives algorithm-only runtimes in seconds for three large graphs, with the fastest thread or rank count in parentheses. For CUDA we show the kernel time and, separately, the time including allocation and transfers.
 
-\begin{table*}[t]
+\begin{table*}[!t]
 \caption{Algorithm-only runtimes in seconds (medians of three trials). Parentheses: thread or rank count of the fastest configuration. CUDA+xfer includes device allocation and host--device transfers.}
 \label{tab:raw}
 \centering\footnotesize
@@ -245,31 +269,31 @@ Table~\ref{tab:raw} gives algorithm-only runtimes in seconds for three large gra
 \subsection{Speedups}
 Figure~\ref{fig:speedup} shows speedup over the sequential run as a function of graph size on the laptop, and Table~\ref{tab:geomean} gives geometric-mean speedups over all 34 graphs.
 
-\begin{figure*}[t]
+\begin{figure*}[!t]
 \centering
 \safefig{figs/fig_speedup_size.pdf}{0.78\textwidth}
 \caption{Speedup over sequential versus graph size on the 5090 laptop (best configuration per graph; points are graphs, lines are binned medians; dashed: CUDA including transfers).}
 \label{fig:speedup}
 \end{figure*}
 
-\begin{table}[t]
+\begin{table}[!tb]
 \caption{Geometric-mean speedup over sequential across all 34 graphs; best thread or rank count chosen per graph, so these are upper bounds for a fixed count.}
 \label{tab:geomean}
-\centering\footnotesize
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
 \safetable{tables/geomean_speedup.tex}
 \end{table}
 
 \subsection{Fastest implementation and thread counts}
 Table~\ref{tab:winners} counts how often each implementation was the fastest. OpenMP wins most instances on both machines, and MPI was fastest on one instance out of 170 on the Mac (PageRank on one graph). Sequential execution was fastest on 11 to 13 of the 34 graphs for BFS and on 6 to 14 for SSSP, depending on the machine, including some graphs between $2^{14}$ and $2^{20}$ vertices. Figure~\ref{fig:workers} shows the fastest OpenMP thread count: on the Mac, 4 threads won 47\% of instances (2 and 8 threads: 21\% and 32\%); on the laptop, 8 threads won 47\% and 16 threads 33\%. The GPU was fastest on 11 of 170 instances: SSSP (5), triangle counting (4), BFS (1) and PageRank (1).
 
-\begin{table}[t]
+\begin{table}[!tb]
 \caption{Number of graphs (out of 34) on which each implementation was fastest by decision cost, among all measured configurations.}
 \label{tab:winners}
-\centering\footnotesize
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
 \safetable{tables/winners.tex}
 \end{table}
 
-\begin{figure}[t]
+\begin{figure}[!tb]
 \centering
 \safefig{figs/fig_workers.pdf}{0.85\columnwidth}
 \caption{Fastest OpenMP thread count per (graph, kernel) instance on each machine.}
@@ -279,7 +303,52 @@ Table~\ref{tab:winners} counts how often each implementation was the fastest. Op
 \subsection{GPU triangle counting and degree skew}
 Table~\ref{tab:tc} shows triangle counting on the R-MAT graph with 547,094 vertices, where the CUDA kernel is slower than a single CPU thread. Across all graphs (Fig.~\ref{fig:skew}), every graph with degree skew of at most 3.1 that reached a 4$\times$ speedup or more was uniform or small-world, and all 12 graphs with skew of 24 or more, including both real graphs, stayed at or below 2.7$\times$; six of them were slower than sequential. No graph in our set has skew between 4.9 and 24.
 
-\begin{table}[t]
+\subsection{Time breakdown}
+Figure~\ref{fig:split} splits end-to-end time into its regions for the fastest option of each framework, on a large and a small graph.
+
+\subsection{Selector}
+Table~\ref{tab:selector} and Fig.~\ref{fig:selector} give total time on held-out inputs relative to the oracle in three scenarios: the Mac (CPU only), the laptop with CUDA removed from the options, and the laptop with the GPU.
+
+\begin{table}[!tb]
+\caption{Total time on held-out inputs relative to the oracle (1.00 = perfect), selection overhead included. In parentheses: percentage of instances slower than sequential.}
+\label{tab:selector}
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Scenario & Held out & Seq. & Best fixed & Size rule & Tree \\
+\midrule
+Mac, CPU only & graph & 4.06 & 1.20 (5.3) & 1.09 (12.9) & \textbf{1.05} (7.1) \\
+ & family & 4.06 & 1.20 (11.8) & 1.07 (13.5) & \textbf{1.05} (5.3) \\
+5090, no GPU & graph & 7.72 & \textbf{1.05} (5.9) & 1.06 (4.1) & 1.07 (4.1) \\
+ & family & 7.72 & \textbf{1.05} (5.9) & 1.06 (4.1) & 1.09 (5.9) \\
+5090, GPU & graph & 8.96 & 1.21 (5.9) & 1.21 (3.5) & \textbf{1.08} (1.2) \\
+ & family & 8.96 & \textbf{1.21} (5.9) & \textbf{1.21} (3.5) & 6.87 (5.3) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%==============================================================
+\section{Performance Analysis}\label{sec:analysis}
+\subsection{Scaling and the size threshold}
+Parallel execution loses on small graphs because its fixed costs (thread start-up, synchronisation, message exchange, kernel launches and transfers) are not amortised. For connected components, PageRank and triangle counting the break-even lies at a few thousand vertices (the learned PageRank rule on the laptop switches at about 1.7 thousand). BFS and SSSP keep sequential execution competitive on a sizeable minority of graphs. A level-synchronous traversal pays a synchronisation on every level, so graphs with many levels and small frontiers, such as the grids, are a plausible cause, but we did not isolate this. On the largest graphs scaling is good up to the physical core count and then flattens: triangle counting on the R-MAT graph reaches 3.6$\times$ with 4 OpenMP threads (90\% efficiency), 6.7$\times$ with 8 (84\%) and 9.3$\times$ with 16 (58\%); the last step uses hyperthreads on the laptop.
+
+\subsection{Where the time goes}
+Loading and preprocessing are the same for every option, so they set a floor under end-to-end time and dilute differences between frameworks. On the Mac, parsing and building the CSR for web-Google took about 1.6\,s and symmetrising it about 0.7\,s, while a BFS needs a few tens of milliseconds; the PageRank transpose took about 0.03\,s, roughly 3\% of the sequential PageRank run. Kernel time for the GPU excludes allocation and transfers, which is why Fig.~\ref{fig:speedup} shows both views: a GPU that is fast by kernel time can still lose in a one-shot run. MPI's setup includes distributing the graph through message passing. \fillin{check this subsection against Fig.~\ref{fig:split} once generated}
+
+\begin{figure*}[!t]
+\centering
+\safefig{figs/fig_time_split.pdf}{0.85\textwidth}
+\caption{Share of end-to-end time by region for the fastest option per framework (S: sequential, O: OpenMP, G: CUDA) on a large and a small synthetic graph, 5090 laptop.}
+\label{fig:split}
+\end{figure*}
+
+\subsection{Machine dependence}
+OpenMP wins most instances on both machines, but the best thread count differs: 4 on the Mac and 8 or 16 on the laptop. The sweeps stop at 8 and 16 threads, so many winners sit at the top of the tested range and a higher count might have won. We expected the Mac's mix of performance and efficiency cores to play a role but did not verify it. A wrong choice between neighbouring thread counts is often cheap (R-MAT triangle counting takes 1.51\,s with 8 threads and 1.10\,s with 16), which is one reason a fixed choice is hard to beat on a single CPU. MPI was fastest once in 170 instances on the Mac. That is unsurprising on one node: MPI pays for distributing the graph through message passing and gains nothing from separate memories.
+
+\subsection{GPU behaviour and degree skew}
+The GPU wins only on large graphs and mostly for SSSP and triangle counting. Its failure on skewed graphs is the clearest result (Table~\ref{tab:tc}, Fig.~\ref{fig:skew}): the CUDA kernel is slower than one CPU thread while OpenMP scales almost linearly. We attribute this to load imbalance in the one-thread-per-vertex mapping, where a few hub vertices carry most of the work, but we have not profiled the kernel, so this remains a hypothesis. Skew, size and density rise together inside the R-MAT family, and the only other high-skew graphs are the two real ones, so the data are consistent with a skew effect but do not prove it. The empty range between skew 4.9 and 24 means we cannot say where the transition happens. Grids are a separate case: they contain no triangles, so the GPU's weak triangle-counting results there say nothing about skew.
+
+\begin{table}[!tb]
 \caption{Triangle counting on the R-MAT graph with 547,094 vertices (laptop): algorithm-only time and speedup over sequential. CUDA is kernel only.}
 \label{tab:tc}
 \centering\footnotesize
@@ -298,67 +367,22 @@ CUDA (vanilla) & 14.34 & 0.71 \\
 \end{tabular}
 \end{table}
 
-\begin{figure}[t]
+\begin{figure}[!tb]
 \centering
 \safefig{figs/fig_cuda_skew.pdf}{0.85\columnwidth}
 \caption{CUDA triangle-counting speedup (including transfers) versus degree skew, by graph family.}
 \label{fig:skew}
 \end{figure}
 
-\subsection{Time breakdown}
-Figure~\ref{fig:split} splits end-to-end time into its regions for the fastest option of each framework, on a large and a small graph.
+\subsection{Selector behaviour}
+\emph{Selection helps when the choice is real.} On unseen graphs the tree stays within 5--8\% of the oracle in all three scenarios. On the Mac, where the best thread count varies by graph, it uses about 12\% less total time than the best fixed choice (1.05 against 1.20), and on the laptop with the GPU option about 11\% less (1.08 against 1.21). With the GPU, the tree also has the fewest instances slower than sequential (1.2\%).
 
-\begin{figure*}[t]
-\centering
-\safefig{figs/fig_time_split.pdf}{0.85\textwidth}
-\caption{Share of end-to-end time by region for the fastest option per framework (S: sequential, O: OpenMP, G: CUDA) on a large and a small synthetic graph, 5090 laptop.}
-\label{fig:split}
-\end{figure*}
-
-\subsection{Selector}
-Table~\ref{tab:selector} and Fig.~\ref{fig:selector} give total time on held-out inputs relative to the oracle in three scenarios: the Mac (CPU only), the laptop with CUDA removed from the options, and the laptop with the GPU.
-
-\begin{table}[t]
-\caption{Total time on held-out inputs relative to the oracle (1.00 = perfect), selection overhead included. In parentheses: percentage of instances slower than sequential.}
-\label{tab:selector}
-\centering\footnotesize
-\begin{tabular}{@{}llrrrr@{}}
-\toprule
-Scenario & Held out & Seq. & Best fixed & Size rule & Tree \\
-\midrule
-Mac, CPU only & graph & 4.06 & 1.20 (5.3) & 1.09 (12.9) & \textbf{1.05} (7.1) \\
- & family & 4.06 & 1.20 (11.8) & 1.07 (13.5) & \textbf{1.05} (5.3) \\
-5090, no GPU & graph & 7.72 & \textbf{1.05} (5.9) & 1.06 (4.1) & 1.07 (4.1) \\
- & family & 7.72 & \textbf{1.05} (5.9) & 1.06 (4.1) & 1.09 (5.9) \\
-5090, GPU & graph & 8.96 & 1.21 (5.9) & 1.21 (3.5) & \textbf{1.08} (1.2) \\
- & family & 8.96 & \textbf{1.21} (5.9) & \textbf{1.21} (3.5) & 6.87 (5.3) \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{figure*}[t]
+\begin{figure*}[!t]
 \centering
 \safefig{figs/fig_selector.pdf}{0.8\textwidth}
 \caption{Total time relative to the oracle for four policies in three scenarios (selection overhead included; logarithmic axis).}
 \label{fig:selector}
 \end{figure*}
-
-%==============================================================
-\section{Performance Analysis}\label{sec:analysis}
-\subsection{Scaling and the size threshold}
-Parallel execution loses on small graphs because its fixed costs (thread start-up, synchronisation, message exchange, kernel launches and transfers) are not amortised. For connected components, PageRank and triangle counting the break-even lies at a few thousand vertices (the learned PageRank rule on the laptop switches at about 1.7 thousand). BFS and SSSP keep sequential execution competitive on a sizeable minority of graphs. A level-synchronous traversal pays a synchronisation on every level, so graphs with many levels and small frontiers are a plausible cause, but we did not isolate this. On the largest graphs scaling is good up to the physical core count and then flattens: triangle counting on the R-MAT graph reaches 3.6$\times$ with 4 OpenMP threads (90\% efficiency), 6.7$\times$ with 8 (84\%) and 9.3$\times$ with 16 (58\%); the last step uses hyperthreads on the laptop.
-
-\subsection{Where the time goes}
-Loading and preprocessing are the same for every option, so they set a floor under end-to-end time and dilute differences between frameworks. On the Mac, parsing and building the CSR for web-Google took about 1.6\,s and symmetrising it about 0.7\,s, while a BFS needs a few tens of milliseconds; the PageRank transpose took about 0.03\,s, roughly 3\% of the sequential PageRank run. Kernel time for the GPU excludes allocation and transfers, which is why Fig.~\ref{fig:speedup} shows both views: a GPU that is fast by kernel time can still lose in a one-shot run. MPI's setup includes distributing the graph through message passing. \fillin{check this subsection against Fig.~\ref{fig:split} once generated}
-
-\subsection{Machine dependence}
-OpenMP wins most instances on both machines, but the best thread count differs: 4 on the Mac and 8 or 16 on the laptop. The sweeps stop at 8 and 16 threads, so many winners sit at the top of the tested range and a higher count might have won. We expected the Mac's mix of performance and efficiency cores to play a role but did not verify it. A wrong choice between neighbouring thread counts is often cheap (R-MAT triangle counting takes 1.51\,s with 8 threads and 1.10\,s with 16), which is one reason a fixed choice is hard to beat on a single CPU. MPI was fastest once in 170 instances on the Mac. That is unsurprising on one node: MPI pays for distributing the graph through message passing and gains nothing from separate memories.
-
-\subsection{GPU behaviour and degree skew}
-The GPU wins only on large graphs and mostly for SSSP and triangle counting. Its failure on skewed graphs is the clearest result (Table~\ref{tab:tc}, Fig.~\ref{fig:skew}): the CUDA kernel is slower than one CPU thread while OpenMP scales almost linearly. We attribute this to load imbalance in the one-thread-per-vertex mapping, where a few hub vertices carry most of the work, but we have not profiled the kernel, so this remains a hypothesis. Skew, size and density rise together inside the R-MAT family, and the only other high-skew graphs are the two real ones, so the data are consistent with a skew effect but do not prove it. The empty range between skew 4.9 and 24 means we cannot say where the transition happens.
-
-\subsection{Selector behaviour}
-\emph{Selection helps when the choice is real.} On unseen graphs the tree stays within 5--8\% of the oracle in all three scenarios. On the Mac, where the best thread count varies by graph, it uses about 12\% less total time than the best fixed choice (1.05 against 1.20), and on the laptop with the GPU option about 11\% less (1.08 against 1.21). With the GPU, the tree also has the fewest instances slower than sequential (1.2\%).
 
 \emph{It adds nothing on a CPU that scales smoothly.} On the laptop without the GPU the best fixed configuration is within 5\% of the oracle and the tree is slightly worse (1.07). A perfect selector with the GPU takes 14\% less total time than without it (0.112 against 0.130 of the sequential total), and the tree obtains 0.121.
 
@@ -374,16 +398,16 @@ The practitioner's alternatives to a selector are in Table~\ref{tab:selector}. `
 \subsection{Against published systems and autotuners}
 We did not run external frameworks, so Table~\ref{tab:compare} is a qualitative comparison of what each approach decides, when, and at what cost. It is not a performance comparison with published systems. The only external check on correctness is the triangle count on web-Google, which matches the value published by SNAP.
 
-\begin{table}[t]
+\begin{table}[!tb]
 \caption{Qualitative comparison with existing approaches. None of the published systems was run.}
 \label{tab:compare}
-\centering\footnotesize
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}p{0.2\columnwidth}p{0.17\columnwidth}p{0.17\columnwidth}p{0.3\columnwidth}@{}}
 \toprule
 Approach & Decides & When & Cost of deciding \\
 \midrule
 Fixed configuration (hand tuned) & one setup per machine & once & none per run \\
-Empirical autotuning~\cite{atlas,fftw} & implementation and parameters & install or planning time & runs the candidates \\
+Empirical autotuning~\cite{atlas,fftw} & code variant and parameters & install or planning time & runs the candidates \\
 Switching inside an algorithm~\cite{dobfs,ligra} & traversal direction & during the run & per-level frontier statistics \\
 Scheduling languages~\cite{graphit} & schedule & compile time & manual or searched \\
 This work & execution model and worker count & before the run & one pass over the vertices and a tree lookup \\
@@ -398,7 +422,7 @@ This work & execution model and worker count & before the run & one pass over th
 \item Three trials per configuration; medians are stable but intervals are coarse.
 \item MPI is single-node and the laptop's MPI sweep did not complete, so MPI conclusions come from the Mac only.
 \item The CUDA kernels are vanilla. GPU results describe an untuned implementation, not the potential of the hardware.
-\item Thirty-two of the 34 graphs come from four generators, and each real family has one graph, so structural conclusions are limited.
+\item Thirty-two of the 34 graphs come from four generators, and each real family has one graph, so structural conclusions are limited. The families also differ in vertex ordering, which may confound structure with memory locality.
 \item Features describe the graph as loaded, while connected components and triangle counting run on the symmetrized graph.
 \item Feature choices and guardrails were designed after looking at evaluation results on the same graphs; leave-one-out evaluation only partly protects against this.
 \item Selectors are trained per machine and cannot transfer to new hardware.
@@ -410,7 +434,7 @@ We built and measured five graph kernels in four execution models on two machine
 
 %==============================================================
 \section{Future Scope}
-The failures point to the next steps: profile the CUDA triangle-counting kernel and fix its load balance, add cheap structure features such as a diameter estimate, and cover more graph families and machines. Beyond that: collect multi-node MPI data, evaluate skipping selection for tiny graphs, add hardware microbenchmark features so a selector can generalise to unseen machines, and build the mid-run switching classifier and tuned GPU variants originally planned for this project. A systematic survey of learned selection for graph systems should precede any novelty claim.
+The failures point to the next steps: profile the CUDA triangle-counting kernel and fix its load balance, add cheap structure features such as a diameter estimate, and cover more graph families and machines. Beyond that: collect multi-node MPI data, evaluate skipping selection for tiny graphs, add hardware microbenchmark features so a selector can generalise to unseen machines, and build the mid-run switching classifier and tuned GPU variants originally planned for this project.
 
 %==============================================================
 \begin{thebibliography}{99}
